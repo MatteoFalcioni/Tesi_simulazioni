@@ -10,13 +10,13 @@ double K = 50;
 
 double k = 0.1; //C-S parameters
 double sigma = 1; 
-double beta = 1/8;
+double beta = 3;
 double R = 10;
 
 double n_c = 5; //Parisi parameter
 
 double t = 0.0;    
-size_t nSteps = 1000;
+size_t nSteps = 1500;
 double dt = 0.1;
 double T = 5*dt;
 
@@ -99,7 +99,7 @@ int main(){
 
             int i_neighbours = 0;  //conta i vicini di i
             double dr = 0.5;
-            double R = L + 1e4;    //"limit" for r, much bigger than the box (topologic interaction has no metric limit, it's only needed for the loop)  
+            double R = L + 1e4;    //"limit" for r, much bigger than the box (topological interaction has no metric limit, it's only needed for the loop)  
 
             for (int j=0; j<n; j++) {
                 if ( j != i ){ 
@@ -124,17 +124,19 @@ int main(){
         }
     }
 
-    double sum=0;
-    /*for (int j=0; j < n; j++) {         //normalizing to have sum_j A_ij = 1 (Markov matrix)
-        for (int i=0; i < n; i++) {
-            sum += Adj[i][j];
-        }
-        for (int i=0; i < n; i++) {
-            Adj[i][j] /= sum;
-            if ( isnan(Adj[i][j]) ) { Adj[i][j] = 0; }
-        }
-    sum = 0;
-    } */
+    if (Model_type == 0) {
+        double sum=0;
+        for (int j=0; j < n; j++) {         //normalizing to have sum_j A_ij = 1 (Markov matrix) (only for CS ?)
+            for (int i=0; i < n; i++) {
+                sum += Adj[i][j];
+            }
+            for (int i=0; i < n; i++) {
+                Adj[i][j] /= sum;
+                if ( isnan(Adj[i][j]) ) { Adj[i][j] = 0; }  //dividing very small numbers (0 but with double precision) will result in nan
+            }
+            sum = 0;
+        } 
+    }
 
     /*for (int i=0; i<n; i++){        //printing Adjacency matrix
         for (int j=0; j<n; j++){
@@ -165,7 +167,7 @@ int main(){
             fout << '\n';   
         }*/
 
-        if ( t >= 0 /*nSteps - 200*/ ) {  //printing m-l/N over the last k steps
+        if ( t >= 0 ) {             //printing m-l/N 
             double m = 0;
             double l = 0;
 
