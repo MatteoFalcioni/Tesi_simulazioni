@@ -5,25 +5,25 @@
 #include "sync.h"
 
 using namespace boost::numeric::odeint;
-double N = 10;  //Kuramoto parameters
+double N = 1000;  //Kuramoto parameters
 double K = 50;
 
-double k = 0.1; //C-S parameters
+double k = 0.1; //Cucker-Smale parameters
 double sigma = 1; 
 double beta = 1/7;
 double R = 10;
 
-double n_c = 1; //Parisi parameter
+double n_c = 360; //Parisi parameter
 
 double t = 0.0;    
-size_t nSteps = 150;
+size_t nSteps = 1000;
 double dt = 0.1;
 double T = 5*dt;
 
 double L = 30;  //box dimension
 
 //**********************//
-int Model_type = 1;     //choose model: 0 = Cucker-Smale, metric interaction; 1 = Parisi, topological
+int Model_type = 1;     ////////  choose model: 0 = Cucker-Smale, metric interaction; 1 = Parisi, topological  ////////
 //**********************//
 
 typedef std::vector<double> state_type;
@@ -62,6 +62,11 @@ int main(){
 
 
     double Adj[n][n];   //Adjacency matrix
+    for (int i=0; i<n; ++i) {
+        for (int j=0; j<n; ++j) {
+            Adj[i][j] = 0;
+        }
+    }
 
     if (Model_type == 0){   //Cucker-Smale
         for (int i=0; i<n; i++){    //filling Adjacency matrix 
@@ -83,6 +88,7 @@ int main(){
             }
         }
     } 
+
     else if (Model_type == 1){  //Parisi
         for (int i=0; i<n; i++){
             double xi = Xpos[i];
@@ -93,27 +99,30 @@ int main(){
             for (int j=0; j<n; j++){
                 double xj = Xpos[j];
                 double yj = Ypos[j];
-                double mod_r = 0;
 
-                if ( j != i ) {
-                    double r_ij = (xj-xi)*(xj-xi) + (yj-yi)*(yj-yi); 
-                    double mod_r = std::sqrt(r_ij);  //modulo di ri-rj
-                }
+                double r_ij = (xj-xi)*(xj-xi) + (yj-yi)*(yj-yi); 
+                double mod_r = std::sqrt(r_ij);  //modulo di ri-rj
 
                 Ri[j] = mod_r;
+                if ( j==i ) { Ri[j] = 0; }
             }
+            /*std::cout<< "relative distances from " <<i<< " which is in ( " << Xpos[i] << " , " << Ypos[i] << " ) are: " << '\n';
+            for (int j=0; j<n; j++){
+                std::cout << Ri[j] << '\t';
+            }
+            std::cout <<'\n';*/
 
             int i_neighbours = 0;  //conta i vicini di i
             double dr = 0.01;
             double R = L * 1.5;    //"limit" for r, topological interaction has no metric limit, it's only needed in the for loop. L*sqrt(2) would be enough, 1.5 chosen for certainty
 
-            for (int j=0; j<n; j++) {
-                if ( j != i ){ 
+            for (double r=0; r<R; r+=dr) {
+                if (i_neighbours <= n_c){ 
                     
-                    for (double r=0; r<R; r+=dr) {
-                        if (i_neighbours < n_c){
+                    for (int j=0; j<n; j++) {
+                        if ( j != i ) {
 
-                            if ( r < Ri[j]+dr && r > Ri[j]-dr ) {
+                            if ( (r < Ri[j]+dr) && (r > Ri[j]-dr) ) {
 
                                 i_neighbours += 1;
                                 Adj[i][j] = 1/n_c;
@@ -122,16 +131,14 @@ int main(){
                         }
                     }
                 }
-                if (j == i){ Adj[i][j] = 0; }
-                if (Adj[i][j] < 0.000000001 ) { Adj[i][j] = 0; }  //otherwise it won't be 0 but a really small number
             }
 
         }
     }
 
-
+/*
     double sum=0;
-    for (int j=0; j < n; j++) {         //normalizing to have sum_j A_ij = 1 (Markov matrix)
+    for (int j=0; j < n; j++) {         //normalizing to have sum_j A_ij = 1 (Markov matrix) NB: when the fireflies will be moving, normalize just for t=0
         for (int i=0; i < n; i++) {
             sum += Adj[i][j];
         }
@@ -141,14 +148,16 @@ int main(){
         }
         sum = 0;
     } 
+*/
     
-/*
-    for (int i=0; i<n; i++){        //printing Adjacency matrix
-        for (int j=0; j<n; j++){
-            std::cout<< Adj[i][j] << '\t';
-        }
-        std::cout << '\n';
-    } */
+    if ( n <= 10 ) { 
+        for (int i=0; i<n; i++){        //printing Adjacency matrix
+            for (int j=0; j<n; j++){
+                std::cout<< Adj[i][j] << '\t';
+            }
+            std::cout << '\n';
+        } 
+    }
 
     for (int i=0; i<N; i++){   //setting initial values for x[i]
         x[i] = Phases[i];
@@ -197,7 +206,7 @@ int main(){
 
             if( Int[i] < 0 ) {         //if the state is incoherent i-th element will stay there longer (aka the state will still be that of x_t)
                 x[i] = x_t[i];
-                //std::cout << "interaction for " << i << " at time " << t << ";it will stay in its state for one more step" <<'\n';
+                //std::cout << "interaction for " << i << " at time " << t << " ;it will stay in its state for one more step" <<'\n';
             }
 
             Int[i] = 0;   //reset Interaction for the new step
@@ -215,16 +224,19 @@ int main(){
             for (int i=0; i<N; ++i) {
                 
                 x_t[i] = x[i]; //saving states in x_t[i]
+                double checkX = 0;
 
                 for (int j=0; j<N; ++j){
 
                     if (i != j) {                             //needed for Chi(i,i) = +1, not needed for Adj[i][i] = 0 
 
-                        Int[i] += /* (K/N) * */ ( Adj[i][j] * Chi(x[i] , x[j]) ) ;   //saving interaction terms
-                        //*********************L'ERRORE E' QUI PROBABILMENTE*******************
-                    }   
+                        Int[i] += (1/N) * ( Adj[i][j] * Chi(x[i] , x[j]) ) ;   //saving interaction terms
+                        checkX += Chi(x[i] , x[j]) ;
 
+                    }   
                 }
+                //std::cout << "interaction term for " <<i<< " at time " <<t<< " was " << Int[i] << " while Chi was " << checkX << '\n';
+                checkX=0;
             }
         }
 
