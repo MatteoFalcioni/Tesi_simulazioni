@@ -2,6 +2,7 @@
 #include <iostream>
 #include <cmath>
 #include <fstream>
+#include <numeric>
 #include "sync.h"
 
 using namespace boost::numeric::odeint;
@@ -13,10 +14,10 @@ double sigma = 1;
 double beta = 1/7;
 double R = 10;
 
-double n_c = 360; //Parisi parameter
+double n_c = 7; //Parisi parameter
 
 double t = 0.0;    
-size_t nSteps = 1000;
+size_t nSteps = 1500;
 double dt = 0.1;
 double T = 5*dt;
 
@@ -106,31 +107,35 @@ int main(){
                 Ri[j] = mod_r;
                 if ( j==i ) { Ri[j] = 0; }
             }
-            /*std::cout<< "relative distances from " <<i<< " which is in ( " << Xpos[i] << " , " << Ypos[i] << " ) are: " << '\n';
+            std::cout<< "relative distances from " <<i<< " which is in ( " << Xpos[i] << " , " << Ypos[i] << " ) are: " << '\n';
             for (int j=0; j<n; j++){
                 std::cout << Ri[j] << '\t';
             }
-            std::cout <<'\n';*/
+            std::cout <<'\n';
 
             int i_neighbours = 0;  //conta i vicini di i
-            double dr = 0.01;
-            double R = L * 1.5;    //"limit" for r, topological interaction has no metric limit, it's only needed in the for loop. L*sqrt(2) would be enough, 1.5 chosen for certainty
+            double dr = 0.001;
+            double r0 = dr*2;
+            double Rmax = L * 1.5;    //"limit" for r; topological interaction has no metric limit, it's only needed in the for loop. L*sqrt(2) would be enough (the box is L*L), 2 chosen for certainty
 
-            for (double r=0; r<R; r+=dr) {
-                if (i_neighbours <= n_c){ 
+            for (double r=0; r<Rmax; r += r0) {   //NB: dr != r0 needed
+                if ( i_neighbours < n_c ){ 
                     
-                    for (int j=0; j<n; j++) {
+                    for (int j=0; j<n; j++) { 
                         if ( j != i ) {
 
-                            if ( (r < Ri[j]+dr) && (r > Ri[j]-dr) ) {
-
+                            if ( r < Ri[j]+dr && r > Ri[j]-dr ) {
+                                std::cout << "for " <<i<< " " <<j<< " was seen as a close neighbour as r = " << r <<'\n';
                                 i_neighbours += 1;
                                 Adj[i][j] = 1/n_c;
+                                if ( i_neighbours == n_c ) { std::cout<< "# of neighbours reached for " <<i<< '\n'; }
                             
                             }
+                            
                         }
                     }
                 }
+                
             }
 
         }

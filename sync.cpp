@@ -6,7 +6,7 @@
 
 int dmod(double t_, double T_, double res) {
 
-    if (T_>t_) { return -1; }  //non posso fargli ritornare T perchè magari è 0.2 e poi mi da 0
+    if (T_>t_) { return -1; }  
 
     else {
         int t = int(t_*res);
