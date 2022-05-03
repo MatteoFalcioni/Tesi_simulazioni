@@ -19,7 +19,7 @@ int dmod(double t_, double T_, double res) {
 int Normalizer(double Theta) {
     int theta = int(Theta);       //tronca theta nel range giusto (2.7 --> 2)
     if (theta % 2 == 0) { theta = 0; }  //range pari spento, range dispari acceso
-    else { theta = 1; }
+    else if (theta % 2 != 0) { theta = 1; }
     return theta;
 }
 

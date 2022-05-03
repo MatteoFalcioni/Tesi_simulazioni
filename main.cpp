@@ -5,24 +5,26 @@
 #include "sync.h"
 
 using namespace boost::numeric::odeint;
-double N = 1000;  //Kuramoto parameters
+double N = 10;  //Kuramoto parameters
 double K = 50;
 
 double k = 0.1; //C-S parameters
 double sigma = 1; 
-double beta = 3;
+double beta = 1/7;
 double R = 10;
 
-double n_c = 5; //Parisi parameter
+double n_c = 1; //Parisi parameter
 
 double t = 0.0;    
-size_t nSteps = 1500;
+size_t nSteps = 150;
 double dt = 0.1;
 double T = 5*dt;
 
 double L = 30;  //box dimension
 
-int Model_type = 0;    //choose model: 0 = Cucker-Smale, metric interaction; 1 = Parisi, topological
+//**********************//
+int Model_type = 1;     //choose model: 0 = Cucker-Smale, metric interaction; 1 = Parisi, topological
+//**********************//
 
 typedef std::vector<double> state_type;
 
@@ -42,7 +44,7 @@ int main(){
     state_type x(N);   // Initial condition, vector of N elements (N ODEs)
 
     state_type x_t(N);  //needed to save the solution before it's overwritten
-    state_type Int(N);
+    state_type Int(N);  //interaction terms 
 
     int n = int(N);
 
@@ -50,23 +52,27 @@ int main(){
     state_type Xpos = Positions_generator(L, n);
     state_type Ypos = Positions_generator(L, n); 
 
-    /*for (int i=0; i<n; i++){    //printing positions
-        std::cout << Xpos[i] << '\t';
+
+    std::fstream positions;   //printing positions
+    positions.open("Positions.txt", std::ios::out);
+    for (int i=0; i<n; i++){   
+        positions << Xpos[i] << '\t' << Ypos[i] << '\n';
     }
-    std::cout << '\n';*/
+    positions.close();
 
 
     double Adj[n][n];   //Adjacency matrix
 
     if (Model_type == 0){   //Cucker-Smale
         for (int i=0; i<n; i++){    //filling Adjacency matrix 
+
+            double xi = Xpos[i];
+            double yi = Ypos[i];
+
             for (int j=0; j<n; j++){
 
-                double xi = Xpos[i];
                 double xj = Xpos[j];
-                double yi = Ypos[i];
                 double yj = Ypos[j];
-
               
                 if( j!=i ) {
                     Adj[i][j] = CS_entries(xi, xj, yi, yj, R, k, sigma, beta); 
@@ -98,8 +104,8 @@ int main(){
             }
 
             int i_neighbours = 0;  //conta i vicini di i
-            double dr = 0.5;
-            double R = L + 1e4;    //"limit" for r, much bigger than the box (topological interaction has no metric limit, it's only needed for the loop)  
+            double dr = 0.01;
+            double R = L * 1.5;    //"limit" for r, topological interaction has no metric limit, it's only needed in the for loop. L*sqrt(2) would be enough, 1.5 chosen for certainty
 
             for (int j=0; j<n; j++) {
                 if ( j != i ){ 
@@ -107,50 +113,49 @@ int main(){
                     for (double r=0; r<R; r+=dr) {
                         if (i_neighbours < n_c){
 
-                            if ( r > Ri[j]-(dr/10) && r < Ri[j]+(dr/10) ) {
+                            if ( r < Ri[j]+dr && r > Ri[j]-dr ) {
 
                                 i_neighbours += 1;
                                 Adj[i][j] = 1/n_c;
                             
                             }
-                            r+=dr;
                         }
                     }
                 }
                 if (j == i){ Adj[i][j] = 0; }
-                if (Adj[i][j] < 0.00001 ) { Adj[i][j] = 0; }  //otherwise it won't be 0 but a really small number
+                if (Adj[i][j] < 0.000000001 ) { Adj[i][j] = 0; }  //otherwise it won't be 0 but a really small number
             }
 
         }
     }
 
-    if (Model_type == 0) {
-        double sum=0;
-        for (int j=0; j < n; j++) {         //normalizing to have sum_j A_ij = 1 (Markov matrix) (only for CS ?)
-            for (int i=0; i < n; i++) {
-                sum += Adj[i][j];
-            }
-            for (int i=0; i < n; i++) {
-                Adj[i][j] /= sum;
-                if ( isnan(Adj[i][j]) ) { Adj[i][j] = 0; }  //dividing very small numbers (0 but with double precision) will result in nan
-            }
-            sum = 0;
-        } 
-    }
 
-    /*for (int i=0; i<n; i++){        //printing Adjacency matrix
+    double sum=0;
+    for (int j=0; j < n; j++) {         //normalizing to have sum_j A_ij = 1 (Markov matrix)
+        for (int i=0; i < n; i++) {
+            sum += Adj[i][j];
+        }
+        for (int i=0; i < n; i++) {
+            if( Adj[i][j] != 0 ) { Adj[i][j] /= sum; }
+            if( isnan( Adj[i][j] ) ) { Adj[i][j] = 0; }
+        }
+        sum = 0;
+    } 
+    
+/*
+    for (int i=0; i<n; i++){        //printing Adjacency matrix
         for (int j=0; j<n; j++){
             std::cout<< Adj[i][j] << '\t';
         }
         std::cout << '\n';
-    }*/
+    } */
 
     for (int i=0; i<N; i++){   //setting initial values for x[i]
         x[i] = Phases[i];
     }
 
-    //std::fstream fout;
-    //fout.open("solutions.txt", std::ios::out); 
+    std::fstream fout;
+    fout.open("solutions.txt", std::ios::out); 
     std::fstream sync;
     sync.open("Synchronization.txt", std::ios::out); 
 
@@ -159,13 +164,13 @@ int main(){
 
     for ( int ii=0; ii<nSteps; ++ii ){  //Integration loop
 
-        /*if (t==0) {             //print initial conditions
+        if (t==0) {             //print initial conditions
             fout << t << '\t';
             for (int i=0; i<N; i++) {
                 fout << x[i] << '\t';
             }
             fout << '\n';   
-        }*/
+        }
 
         if ( t >= 0 ) {             //printing m-l/N 
             double m = 0;
@@ -190,7 +195,7 @@ int main(){
 
         for (int i=0; i<N; ++i){
 
-            if( Int[i]<0 ) {         //if the state is incoherent i-th element will stay there longer (aka the state will still be that of x_t)
+            if( Int[i] < 0 ) {         //if the state is incoherent i-th element will stay there longer (aka the state will still be that of x_t)
                 x[i] = x_t[i];
                 //std::cout << "interaction for " << i << " at time " << t << ";it will stay in its state for one more step" <<'\n';
             }
@@ -199,11 +204,11 @@ int main(){
 
         }
 
-        /*fout << t << '\t';      //print solution at time t    
+        fout << t << '\t';      //print solution at time t    
         for (int i=0; i<N; i++) {
             fout << x[i] << '\t';
         }
-        fout << '\n';  */ 
+        fout << '\n';   
 
         if ( ( t!=0 ) && ( dmod(t , T , 100) == 0 || dmod(t , T-dt , 100) == 0 ) ) {     //interazione a t = T, T-dt
 
@@ -211,21 +216,20 @@ int main(){
                 
                 x_t[i] = x[i]; //saving states in x_t[i]
 
-                for (int j=0; j<N; ++j){  
+                for (int j=0; j<N; ++j){
+
                     if (i != j) {                             //needed for Chi(i,i) = +1, not needed for Adj[i][i] = 0 
 
-                        Int[i] += (K/N) * Adj[i][j] *  Chi(x[i] , x[j]) ;   //saving interaction terms
+                        Int[i] += /* (K/N) * */ ( Adj[i][j] * Chi(x[i] , x[j]) ) ;   //saving interaction terms
+                        //*********************L'ERRORE E' QUI PROBABILMENTE*******************
+                    }   
 
-                    }                                 
                 }
-
             }
         }
 
-        
-
     }
-    //fout.close();  
+    fout.close();  
     sync.close();
 
 }
