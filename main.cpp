@@ -6,15 +6,15 @@
 #include "sync.h"
 
 using namespace boost::numeric::odeint;
-double N = 1000;  //Kuramoto parameters
-double K = 50;
+double N = 1000;  //Kuramoto parameters   
+double K = 50;                         
 
 double k = 0.1; //Cucker-Smale parameters
 double sigma = 1; 
 double beta = 1/7;
 double R = 10;
 
-double n_c = 7; //Parisi parameter
+double n_c = 10; //Parisi parameter
 
 double t = 0.0;    
 size_t nSteps = 1500;
@@ -52,7 +52,6 @@ int main(){
     state_type Phases = Phases_generator(N);
     state_type Xpos = Positions_generator(L, n);
     state_type Ypos = Positions_generator(L, n); 
-
 
     std::fstream positions;   //printing positions
     positions.open("Positions.txt", std::ios::out);
@@ -107,11 +106,11 @@ int main(){
                 Ri[j] = mod_r;
                 if ( j==i ) { Ri[j] = 0; }
             }
-            std::cout<< "relative distances from " <<i<< " which is in ( " << Xpos[i] << " , " << Ypos[i] << " ) are: " << '\n';
+            /*std::cout<< "relative distances from " <<i<< " which is in ( " << Xpos[i] << " , " << Ypos[i] << " ) are: " << '\n';
             for (int j=0; j<n; j++){
                 std::cout << Ri[j] << '\t';
             }
-            std::cout <<'\n';
+            std::cout <<'\n';*/
 
             int i_neighbours = 0;  //conta i vicini di i
             double dr = 0.001;
@@ -125,10 +124,10 @@ int main(){
                         if ( j != i ) {
 
                             if ( r < Ri[j]+dr && r > Ri[j]-dr ) {
-                                std::cout << "for " <<i<< " " <<j<< " was seen as a close neighbour as r = " << r <<'\n';
+                                //std::cout << "for " <<i<< " " <<j<< " was seen as a close neighbour as r = " << r <<'\n';
                                 i_neighbours += 1;
                                 Adj[i][j] = 1/n_c;
-                                if ( i_neighbours == n_c ) { std::cout<< "# of neighbours reached for " <<i<< '\n'; }
+                                //if ( i_neighbours == n_c ) { std::cout<< "# of neighbours reached for " <<i<< '\n'; }
                             
                             }
                             
@@ -191,10 +190,10 @@ int main(){
             double l = 0;
 
             for (int i=0; i<N; i++){
-                if ( Normalizer(x[i]) == 0 ) {
+                if ( normalizer(x[i]) == 0 ) {
                     m += 1;
                 }
-                if ( Normalizer(x[i]) == 1 ) {
+                if ( normalizer(x[i]) == 1 ) {
                     l += 1;
                 }
             }
@@ -203,7 +202,7 @@ int main(){
 
         }
         
-        t += dt;    //adjourn current time        
+        t += dt;    //adjourn current time 
         
         rk4.do_step(MCU(), x , t, dt);     //perform one integration step. Solution x is overwritten
 
@@ -224,24 +223,27 @@ int main(){
         }
         fout << '\n';   
 
-        if ( ( t!=0 ) && ( dmod(t , T , 100) == 0 || dmod(t , T-dt , 100) == 0 ) ) {     //interazione a t = T, T-dt
+        if ( ( t!=0 ) && ( t == 0.4 || dmod(t , T , 10) == 0 || dmod(t-(4*dt) , T , 10) == 0 ) ) {     //interazione a t = T, T-dt 
+            std::cout << "interaction at t = " <<t << '\n';
 
             for (int i=0; i<N; ++i) {
                 
                 x_t[i] = x[i]; //saving states in x_t[i]
-                double checkX = 0;
+
+                //std::cout << "evaluating interaction term for " <<i<< '\n';
 
                 for (int j=0; j<N; ++j){
 
                     if (i != j) {                             //needed for Chi(i,i) = +1, not needed for Adj[i][i] = 0 
 
-                        Int[i] += (1/N) * ( Adj[i][j] * Chi(x[i] , x[j]) ) ;   //saving interaction terms
-                        checkX += Chi(x[i] , x[j]) ;
+                        Int[i] += (1/N)*  ( Adj[i][j] * Chi(x[i] , x[j]) ) ;   //saving interaction terms ERRORE NEL TERMINE DI INTERAZIONE, FORSE IN CHI?
+                        /*std::cout <<"Adj["<<i<<"]["<<j<<"]"<< " was: " << Adj[i][j] <<'\n';
+                        std::cout <<"Chi(i,j) was " << Chi(x[i] , x[j]) << " as i was " <<x[i]<< " and j was " <<x[j] << " .Their normalized values were i: " <<normalizer(x[i]) << " j: " <<normalizer(x[j]) <<" .Their int(#) where: i = " << int(x[i]) <<" j = " << int(x[j]) << " and their trunced values were: i = " << trunc(x[i]) << " j = " << trunc(x[j]) <<'\n';
+                        std::cout <<"the term added to Int["<<i<<"]"<< " was " << Adj[i][j] * Chi(x[i] , x[j] ) <<'\n';*/
 
                     }   
                 }
-                //std::cout << "interaction term for " <<i<< " at time " <<t<< " was " << Int[i] << " while Chi was " << checkX << '\n';
-                checkX=0;
+                //std::cout << "interaction term for " <<i<< " at time " <<t<< " was " << Int[i] << '\n';
             }
         }
 

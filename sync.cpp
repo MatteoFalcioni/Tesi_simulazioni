@@ -6,18 +6,21 @@
 
 int dmod(double t_, double T_, double res) {
 
-    if (T_>t_) { return -1; }  
+    if ( T_-0.01 >t_ ) { return -1; }    //all these 0.01 are needed to account for double imprecision
 
     else {
-        int t = int(t_*res);
-        int T = int(T_*res);
+        double t1 = t_+0.01;
+        double T1 = T_+0.01;
+        int t = trunc(t1*res);
+        int T = trunc(T1*res);
         return t % T;
     }
 
 }
 
-int Normalizer(double Theta) {
-    int theta = int(Theta);       //tronca theta nel range giusto (2.7 --> 2)
+
+int normalizer(double Theta) {
+    int theta = trunc(Theta + 0.01);       //tronca theta nel range giusto (2.7 --> 2)
     if (theta % 2 == 0) { theta = 0; }  //range pari spento, range dispari acceso
     else if (theta % 2 != 0) { theta = 1; }
     return theta;
@@ -25,8 +28,8 @@ int Normalizer(double Theta) {
 
 double Chi(double Theta_i, double Theta_j) {
 
-    int theta_i = Normalizer(Theta_i);
-    int theta_j = Normalizer(Theta_j); 
+    int theta_i = normalizer(Theta_i);
+    int theta_j = normalizer(Theta_j); 
 
     int Phase_diff = theta_i - theta_j;
 

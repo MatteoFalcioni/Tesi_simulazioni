@@ -9,7 +9,7 @@
 
 int dmod(double t_, double T_, double res);
 
-int Normalizer(double Theta);
+int normalizer(double Theta);
 
 double Chi(double Theta_i, double Theta_j);
 
@@ -17,7 +17,7 @@ std::vector<double> Phases_generator(int N);
 std::vector<double> Positions_generator(double L, int N);
 
 double CS_entries(double xi, double xj, double yi, double yj, double R, double k, double sigma, double beta);
-double Parisi_entries ( std::vector<double> Xpos, std::vector<double> Ypos, double n_c );
+
 
 
 #endif 
