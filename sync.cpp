@@ -6,7 +6,7 @@
 
 int dmod(double t_, double T_, double res) {
 
-    if ( T_-0.01 >t_ ) { return -1; }    //all these 0.01 are needed to account for double imprecision
+    if ( T_-0.01 >t_ ) { return -1; }    //all the 0.01 are needed to account for double imprecision
 
     else {
         double t1 = t_+0.01;
@@ -26,7 +26,41 @@ int normalizer(double Theta) {
     return theta;
 }
 
-double Chi(double Theta_i, double Theta_j) {
+bool sameRange(double Theta_i, double Theta_j) {  //Chi definita col normalizer, problema delle lucciole che rimangono indietro e non vengono notate
+
+    int theta_i = normalizer(Theta_i);
+    int theta_j = normalizer(Theta_j); 
+
+    int Phase_diff = theta_i - theta_j;
+
+    if (Phase_diff == 0) { return true; } //fasi coerenti (0,0) o (1,1)
+    if (Phase_diff != 0) { return false; } //fasi incoerenti (1,0) o (0,1)
+}
+
+double Chi(double theta_i, double theta_j, double maxdiff) {  //no pure così è sbagliato. devono SIA essere nelle stesso range SIA differire di meno di maxdiff per dirsi sincronizzate
+
+    bool samerange = sameRange(theta_i, theta_j);
+
+    //std::cout << " initially i and j were i = " <<theta_i<< " j = " <<theta_j<< " so sameRange returned " <<samerange<< '\n';
+    while (theta_i > 1) { theta_i -= 1; }
+    while (theta_j > 1) { theta_j -= 1; } 
+    //std::cout << " after -=1 i and j were i = " <<theta_i<< " j = " <<theta_j<< '\n';
+
+    double phase_diff = theta_i - theta_j;
+    if ( phase_diff < 0 ) { phase_diff = -phase_diff; }
+    //std::cout << " phase difference was " <<phase_diff<< '\n';
+
+    if ( phase_diff < maxdiff + 0.01 && samerange ) {
+        //std::cout << "and therefore Chi returned +1" <<'\n';
+        return +1;
+    } 
+    if ( phase_diff > maxdiff + 0.01 || !samerange ) {
+        //std::cout << "and therefore Chi returned -1" <<'\n';
+        return -1;
+    } 
+}
+
+/*double Chi(double Theta_i, double Theta_j) {  //Chi definita col normalizer, problema delle lucciole che rimangono indietro e non vengono notate
 
     int theta_i = normalizer(Theta_i);
     int theta_j = normalizer(Theta_j); 
@@ -35,7 +69,7 @@ double Chi(double Theta_i, double Theta_j) {
 
     if (Phase_diff == 0) { return +1; } //fasi coerenti (0,0) o (1,1)
     if (Phase_diff != 0) { return -1; } //fasi incoerenti (1,0) o (0,1)
-}
+}*/
 
 std::vector<double> Phases_generator(int N){
     std::vector<double> Phases(N);

@@ -7,11 +7,12 @@
 #include <boost/numeric/odeint.hpp>
 #include <iostream>
 
-int dmod(double t_, double T_, double res);
+int dmod(double t, double T, double res);
 
-int normalizer(double Theta);
+int normalizer(double theta);
 
-double Chi(double Theta_i, double Theta_j);
+bool sameRange(double Theta_i, double Theta_j);
+double Chi(double theta_i, double theta_j, double maxdiff);
 
 std::vector<double> Phases_generator(int N);
 std::vector<double> Positions_generator(double L, int N);

@@ -20,11 +20,12 @@ double t = 0.0;
 size_t nSteps = 1500;
 double dt = 0.1;
 double T = 5*dt;
+double maxdiff = 0.01;
 
 double L = 30;  //box dimension
 
 //**********************//
-int Model_type = 1;     ////////  choose model: 0 = Cucker-Smale, metric interaction; 1 = Parisi, topological  ////////
+int Model_type = 1;     ////////  choose model: 0 = Cucker-Smale, metric interaction; 1 = Parisi, topological  ////////  
 //**********************//
 
 typedef std::vector<double> state_type;
@@ -115,7 +116,7 @@ int main(){
             int i_neighbours = 0;  //conta i vicini di i
             double dr = 0.001;
             double r0 = dr*2;
-            double Rmax = L * 1.5;    //"limit" for r; topological interaction has no metric limit, it's only needed in the for loop. L*sqrt(2) would be enough (the box is L*L), 2 chosen for certainty
+            double Rmax = L * 1.5;    //"limit" for r; topological interaction has no metric limit, it's only needed in the for loop. L*sqrt(2) would be enough (the box is L*L), 1.5 chosen for certainty
 
             for (double r=0; r<Rmax; r += r0) {   //NB: dr != r0 needed
                 if ( i_neighbours < n_c ){ 
@@ -191,12 +192,15 @@ int main(){
 
             for (int i=0; i<N; i++){
                 if ( normalizer(x[i]) == 0 ) {
+                    //std::cout << "x["<<i<<"] at time t = " <<t<< " was " <<x[i] <<" .Its normalized value was " <<normalizer(x[i]) << " and therefore m+=1 " <<'\n';
                     m += 1;
                 }
                 if ( normalizer(x[i]) == 1 ) {
+                    //std::cout << "x["<<i<<"] at time t = " <<t<< " was " <<x[i] <<" .Its normalized value was " <<normalizer(x[i]) << " and therefore l+=1 " <<'\n';
                     l += 1;
                 }
             }
+            //std::cout << "m value was: " <<m<< " and l value was: " <<l<< " so m-l/N was: " << (m-l)/N << '\n'; 
             
             sync << t <<'\t'<< (m-l)/N << '\n';
 
@@ -210,7 +214,7 @@ int main(){
 
             if( Int[i] < 0 ) {         //if the state is incoherent i-th element will stay there longer (aka the state will still be that of x_t)
                 x[i] = x_t[i];
-                //std::cout << "interaction for " << i << " at time " << t << " ;it will stay in its state for one more step" <<'\n';
+                //std::cout << i << " was reset in its t-1 state at time " << t << " as Int[i] was " << Int[i] << '\n';
             }
 
             Int[i] = 0;   //reset Interaction for the new step
@@ -224,7 +228,7 @@ int main(){
         fout << '\n';   
 
         if ( ( t!=0 ) && ( t == 0.4 || dmod(t , T , 10) == 0 || dmod(t-(4*dt) , T , 10) == 0 ) ) {     //interazione a t = T, T-dt 
-            std::cout << "interaction at t = " <<t << '\n';
+            //std::cout << "interaction at t = " <<t << '\n';
 
             for (int i=0; i<N; ++i) {
                 
@@ -236,11 +240,16 @@ int main(){
 
                     if (i != j) {                             //needed for Chi(i,i) = +1, not needed for Adj[i][i] = 0 
 
-                        Int[i] += (1/N)*  ( Adj[i][j] * Chi(x[i] , x[j]) ) ;   //saving interaction terms ERRORE NEL TERMINE DI INTERAZIONE, FORSE IN CHI?
-                        /*std::cout <<"Adj["<<i<<"]["<<j<<"]"<< " was: " << Adj[i][j] <<'\n';
-                        std::cout <<"Chi(i,j) was " << Chi(x[i] , x[j]) << " as i was " <<x[i]<< " and j was " <<x[j] << " .Their normalized values were i: " <<normalizer(x[i]) << " j: " <<normalizer(x[j]) <<" .Their int(#) where: i = " << int(x[i]) <<" j = " << int(x[j]) << " and their trunced values were: i = " << trunc(x[i]) << " j = " << trunc(x[j]) <<'\n';
-                        std::cout <<"the term added to Int["<<i<<"]"<< " was " << Adj[i][j] * Chi(x[i] , x[j] ) <<'\n';*/
+                        if( Adj[i][j] != 0 ) {
 
+                            Int[i] += /*(1/N)*/ ( Adj[i][j] * Chi(x[i] , x[j], 0.2) ) ;   //saving interaction terms 
+                            /*if (t>0 && t<150){
+                                
+                                    std::cout <<"Adj["<<i<<"]["<<j<<"]"<< " was: " << Adj[i][j] <<'\n';
+                                    std::cout <<"Chi(i,j) was " << Chi(x[i] , x[j], maxdiff) << " as i was " <<x[i]<< " and j was " <<x[j] << " .Their normalized values were i: " <<normalizer(x[i]) << " j: " <<normalizer(x[j]) <<'\n';
+                                    std::cout <<"the term added to Int["<<i<<"]"<< " was " << Adj[i][j] * Chi(x[i] , x[j], maxdiff ) <<'\n';
+                            } */
+                        }
                     }   
                 }
                 //std::cout << "interaction term for " <<i<< " at time " <<t<< " was " << Int[i] << '\n';
