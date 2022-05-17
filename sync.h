@@ -9,6 +9,8 @@
 
 int dmod(double t, double T, double res);
 
+double random_t(double t);
+
 int normalizer(double theta);
 
 bool sameRange(double Theta_i, double Theta_j);

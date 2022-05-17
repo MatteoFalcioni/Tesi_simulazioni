@@ -20,31 +20,33 @@ int dmod(double t_, double T_, double res) {
 
 
 int normalizer(double Theta) {
-    int theta = trunc(Theta + 0.01);       //tronca theta nel range giusto (2.7 --> 2)
-    if (theta % 2 == 0) { theta = 0; }  //range pari spento, range dispari acceso
+    int theta = trunc(Theta + 0.01);       //truncs theta in the proper range (2.7 --> 2)
+    if (theta % 2 == 0) { theta = 0; }  //odd range -> off, even range -> on
     else if (theta % 2 != 0) { theta = 1; }
     return theta;
 }
 
-bool sameRange(double Theta_i, double Theta_j) {  //Chi definita col normalizer, problema delle lucciole che rimangono indietro e non vengono notate
+bool sameRange(double Theta_i, double Theta_j) {  
 
     int theta_i = normalizer(Theta_i);
     int theta_j = normalizer(Theta_j); 
 
     int Phase_diff = theta_i - theta_j;
 
-    if (Phase_diff == 0) { return true; } //fasi coerenti (0,0) o (1,1)
-    if (Phase_diff != 0) { return false; } //fasi incoerenti (1,0) o (0,1)
+    if (Phase_diff == 0) { return true; } //coherent phases (0,0) or (1,1)
+    if (Phase_diff != 0) { return false; } //incoherent phases (1,0) or (0,1)
 }
 
-double Chi(double theta_i, double theta_j, double maxdiff) {  //no pure così è sbagliato. devono SIA essere nelle stesso range SIA differire di meno di maxdiff per dirsi sincronizzate
+double Chi(double theta_i, double theta_j, double maxdiff) {  //to be synchronized the fireflies need to be in the same range AND differ less than maxdiff
 
     bool samerange = sameRange(theta_i, theta_j);
 
     //std::cout << " initially i and j were i = " <<theta_i<< " j = " <<theta_j<< " so sameRange returned " <<samerange<< '\n';
-    while (theta_i > 1) { theta_i -= 1; }
-    while (theta_j > 1) { theta_j -= 1; } 
-    //std::cout << " after -=1 i and j were i = " <<theta_i<< " j = " <<theta_j<< '\n';
+    double xi = trunc(theta_i + 0.01);
+    double xj = trunc(theta_j + 0.01);
+    theta_i -= xi;
+    theta_j -= xj;
+    //std::cout << " after -=x, i and j were i = " <<theta_i<< " j = " <<theta_j<< '\n';
 
     double phase_diff = theta_i - theta_j;
     if ( phase_diff < 0 ) { phase_diff = -phase_diff; }
@@ -115,7 +117,28 @@ double CS_entries(double xi, double xj, double yi, double yj, double R, double k
 
 }
 
+double random_t(double t0){  //non serve o da fare meglio
 
+    double x = trunc(t0 + 0.001);
+    t0 -= x;                 //get t beetween 0 and 1 (t=198.7 -> t-=198 -> t=0.7)
+    int tf = (t0*10);
+
+    std::random_device rd;  
+    std::mt19937 seed(rd()); 
+    std::uniform_int_distribution<int> t_dist(0, 9);
+
+    int T = t_dist(seed);
+
+    if ( tf % T == 0 ) {
+        std::cout << "random_t returned 0; " << '\n';
+        std::cout << " in fact T = " <<T<< " , t0 = " <<t0<< "and tf = " <<tf<< '\n';
+        return 0;
+    }
+    else {
+        return 1;
+    }
+
+}
     
     
 
