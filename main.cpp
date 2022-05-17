@@ -41,10 +41,10 @@ struct MCU{             //functor to be passed to do_step for the integration
     }
 };
 
-
 int main(){
 
     state_type x(N);   // Initial condition, vector of N elements (N ODEs)
+    state_type x1(N);      
 
     state_type x_t(N);  //needed to save the solution before it's overwritten
     state_type Int(N);  //interaction terms 
@@ -291,7 +291,7 @@ int main(){
 
             for (int i=0; i<n; ++i) {
 
-                jumpStart[i] = 0;
+                //jumpStart[i] = 0;
                 
                 x_t[i] = x[i]; //saving states in x_t[i]
 
