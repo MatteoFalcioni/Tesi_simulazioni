@@ -6,7 +6,7 @@
 #include "sync.h"
 
 using namespace boost::numeric::odeint;
-double N = 500;  //Kuramoto parameters   
+double N = 10;  //Kuramoto parameters   
 double K = 50;                         
 
 double k = 0.1; //Cucker-Smale parameters
@@ -14,7 +14,7 @@ double sigma = 1;
 double beta = 1/7;
 double R = 10;
 
-double n_c = 450; //Parisi parameter
+double n_c = 4; //Parisi parameter
 
 double t = 0.0;    //time related parameters
 size_t nSteps = 200;
@@ -173,6 +173,8 @@ int main(){
     fout.open("solutions.txt", std::ios::out); 
     std::fstream sync;
     sync.open("Synchronization.txt", std::ios::out); 
+    std::fstream check;
+    check.open("Initial_conditions.txt", std::ios::out);
 
     //create stepper:
     runge_kutta4<state_type> rk4; 
@@ -206,6 +208,10 @@ int main(){
                 }
             }
             //std::cout << "m value was: " <<m<< " and l value was: " <<l<< " so m-l/N was: " << (m-l)/N << '\n'; 
+
+            if (t==0) {
+                check << m << '\t' << l << '\t' << N << '\n'; 
+            }
             
             sync << t <<'\t'<< (m-l)/N << '\n';
 
@@ -216,17 +222,18 @@ int main(){
         rk4.do_step(MCU(), x , t, dt);     //perform one integration step. Solution x is overwritten        
 
         for (int i=0; i<N; ++i){
+            //std::cout << "Int["<<i<<"] = " <<Int[i] << '\n';
 
             if( Int[i] < 0 ) {         //if the state is incoherent i-th element will stay there longer (aka the state will still be that of x_t)
                 x[i] = x_t[i];
                 //std::cout << i << " was reset in its t-1 state at time " << t << " as Int[i] was " << Int[i] << '\n';
             }
 
-            //if ( jumpStart[i] != 1 ) { 
-                Int[i] = 0;   //reset Interaction for the new step
-            //}
+            Int[i] = 0;   //reset Interaction for the new step
+            
 
         }
+
 
         fout << t << '\t';      //print solution at time t    
         for (int i=0; i<N; i++) {
@@ -236,14 +243,14 @@ int main(){
 
         //*****************interazione a t = T, t = T-dt***************************************
 
-        /*if ( ( t!=0 ) && ( t == 0.4 || dmod(t , T , 10) == 0 || dmod(t-(4*dt) , T , 10) == 0 ) ) {     
+        if ( ( t!=0 ) && ( t == 0.4 || dmod(t , T , 10) == 0 || dmod(t-(4*dt) , T , 10) == 0 ) ) {     
             std::cout << "interaction at t = " <<t << '\n';
 
             for (int i=0; i<N; ++i) {
                 
                 x_t[i] = x[i]; //saving states in x_t[i]
 
-                std::cout << "evaluating interaction term for " <<i<< '\n';
+                //std::cout << "evaluating interaction term for " <<i<< '\n';
 
                 for (int j=0; j<N; ++j){
 
@@ -252,20 +259,32 @@ int main(){
                         if( Adj[i][j] != 0 ) {
 
                             Int[i] += (1/N)* ( Adj[i][j] * Chi(x[i] , x[j], maxdiff) ) ;   //saving interaction terms 
-                            if (t>130 && t<140){
+                            /*if (t>130 && t<140){
                                 
                                     std::cout <<"Adj["<<i<<"]["<<j<<"]"<< " was: " << Adj[i][j] <<'\n';
                                     std::cout <<"Chi(i,j) was " << Chi(x[i] , x[j], maxdiff) << " as i was " <<x[i]<< " and j was " <<x[j] <<'\n';
                                     std::cout <<"the term added to Int["<<i<<"]"<< " was " << Adj[i][j] * Chi(x[i] , x[j], maxdiff ) <<'\n';
-                            } 
+                            } */
                         }
                     }   
                 }
-                std::cout << "interaction term for " <<i<< " at time " <<t<< " was " << Int[i] << '\n';
+                //std::cout << "interaction term for " <<i<< " at time " <<t<< " was " << Int[i] << '\n';
             }
-        } */
+        } 
+
+        for (int i=0; i<n; i++) {
+            if( Int[i] < 0 ) {  
+                counter += 1;
+            }      
+        }
+        std::cout<< "at time " <<t<< "there were " <<counter<< " negative interaction terms on a total of " <<n<< '\n';
+        if ( counter >= n-1 ) { 
+            std::cout << "******ERROR****** : every interaction term was negative; so every firefly stayed in her state and synchronization was impossible to achieve" <<'\n'; 
+        }
+        counter = 0;         
 
         //*********************interazione a t random*************************  si può fare in maniera molto più semplice e più pulita con dmod
+        /*
         //std::cout<< "t = " <<t<<'\n';
         double s = trunc(t + 0.001);
         double t1 = t - s;                 //get t1 beetween 0 and 1 (t=198.7 -> t1 = 198.7 - 198 = 0.7)
@@ -301,7 +320,7 @@ int main(){
 
                         if( Adj[i][j] != 0 ) {
 
-                            Int[i] += /*(1/N) * */  ( Adj[i][j] * Chi(x[i] , x[j], maxdiff) ) ;   //saving interaction terms 
+                            Int[i] += (1/N) *   ( Adj[i][j] * Chi(x[i] , x[j], maxdiff) ) ;   //saving interaction terms 
 
                         }
                     }   
@@ -315,10 +334,10 @@ int main(){
                     counter += 1;
                 }      
             }
-            std::cout<< "at time " <<t<< "there were " <<counter<< " negative interaction terms on a total of " <<n<< '\n';
+            //std::cout<< "at time " <<t<< "there were " <<counter<< " negative interaction terms on a total of " <<n<< '\n';
             if ( counter >= n-1 ) { 
-                std::cout << "******ERROR****** : every interaction term was negative; so every firefly would have stayed in her state and synchronization would have been impossible to achieve" <<'\n'; 
-                /*
+                //std::cout << "******ERROR****** : every interaction term was negative; so every firefly would have stayed in her state and synchronization would have been impossible to achieve" <<'\n'; 
+                
                 for (int k=0; k<n; ++k) {   //resettando alcuni termini di interazione a +1 non si sistema nulla; all'interazione successiva vengono di nuovo valutati come negativi 
                     if (k % 10 == 0) {
                         Int[k] = +1;
@@ -327,14 +346,15 @@ int main(){
                     }
                 }
                 std::cout << "some interaction terms were set to +1 in order to make synchronization achievable again" <<'\n';
-                */
+                
 
             }
             counter = 0;                   
 
-        }
+        } */
 
     }
+    check.close();
     fout.close();  
     sync.close();
 
@@ -342,4 +362,4 @@ int main(){
 
 
 //SEMPRE LO STESSO PROBLEMA: IL TERMINE DI INTERAZIONE RISULTA NEGATIVO PER TUTTE: QUESTO LE PORTA A FERMARSI CONTEMPORANEAMENTE NELLO STATO IN CUI SONO. COSI' NON SI SINCRONIZZANO MAI...
-//COME LO SISTEMO? METTENDO DIRETTAMENTE UN IF DEL TIPO: SE PER OGNI I INT[I] NEGATIVO ALLORA INT[I] DI QUALCUNO POSITIVO? HA SENSO..?
+//COSA LO CAUSA??
