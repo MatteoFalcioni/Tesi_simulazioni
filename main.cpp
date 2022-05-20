@@ -6,7 +6,7 @@
 #include "sync.h"
 
 using namespace boost::numeric::odeint;
-double N = 10;  //Kuramoto parameters   
+double N = 500;  //Kuramoto parameters   
 double K = 50;                         
 
 double k = 0.1; //Cucker-Smale parameters
@@ -14,7 +14,7 @@ double sigma = 1;
 double beta = 1/7;
 double R = 10;
 
-double n_c = 4; //Parisi parameter
+double n_c = 450; //Parisi parameter
 
 double t = 0.0;    //time related parameters
 size_t nSteps = 200;
@@ -254,7 +254,7 @@ int main(){
 
                 for (int j=0; j<N; ++j){
 
-                    if (i != j) {                             //needed for Chi(i,i) = +1, not needed for Adj[i][i] = 0 
+                    if (i != j) {                             //probably not needed as Chi(i,i) = +1 but Adj[i][i] = 0 
 
                         if( Adj[i][j] != 0 ) {
 
