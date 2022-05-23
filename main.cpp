@@ -266,7 +266,7 @@ int main(){
                     //if (i != j) {                             //probably not needed as Chi(i,i) = +1 but Adj[i][i] = 0 
 
                         //if( Adj[i][j] != 0 ) {
-
+                            
                             Int[i] += /*(1/N)**/ ( Adj[i][j] * Chi(x[i] , x[j], maxdiff) ) ;   //saving interaction terms
                             /*if (t>130 && t<140){
                                 

@@ -62,26 +62,6 @@ double Chi(double theta_i, double theta_j, double maxdiff) {  //to be synchroniz
     } 
 }
 
-double Try(double theta_i, double theta_j, double maxdiff){
-
-    bool samerange = sameRange(theta_i, theta_j);
-
-    double xi = trunc(theta_i + 0.01);
-    double xj = trunc(theta_j + 0.01);
-    theta_i -= xi;
-    theta_j -= xj;
-
-    double Sin = sin(theta_i - theta_j);
-    if ( Sin < 0 ) { Sin = -Sin; }
-
-    if ( Sin < maxdiff + 0.01 && samerange ) {
-        return +1;
-    } 
-    if ( Sin > maxdiff + 0.01 || !samerange ) {
-        return -1;
-    }    
-}
-
 /*double Chi(double Theta_i, double Theta_j) {  //Chi definita col normalizer, problema delle lucciole che rimangono indietro e non vengono notate
 
     int theta_i = normalizer(Theta_i);
@@ -137,29 +117,6 @@ double CS_entries(double xi, double xj, double yi, double yj, double R, double k
 
 }
 
-double random_t(double t0){  //non serve o da fare meglio
-
-    double x = trunc(t0 + 0.001);
-    t0 -= x;                 //get t beetween 0 and 1 (t=198.7 -> t-=198 -> t=0.7)
-    int tf = (t0*10);
-
-    std::random_device rd;  
-    std::mt19937 seed(rd()); 
-    std::uniform_int_distribution<int> t_dist(0, 9);
-
-    int T = t_dist(seed);
-
-    if ( tf % T == 0 ) {
-        std::cout << "random_t returned 0; " << '\n';
-        std::cout << " in fact T = " <<T<< " , t0 = " <<t0<< "and tf = " <<tf<< '\n';
-        return 0;
-    }
-    else {
-        return 1;
-    }
-
-}
-    
     
 
     
