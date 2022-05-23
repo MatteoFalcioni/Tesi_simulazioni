@@ -62,6 +62,26 @@ double Chi(double theta_i, double theta_j, double maxdiff) {  //to be synchroniz
     } 
 }
 
+double Try(double theta_i, double theta_j, double maxdiff){
+
+    bool samerange = sameRange(theta_i, theta_j);
+
+    double xi = trunc(theta_i + 0.01);
+    double xj = trunc(theta_j + 0.01);
+    theta_i -= xi;
+    theta_j -= xj;
+
+    double Sin = sin(theta_i - theta_j);
+    if ( Sin < 0 ) { Sin = -Sin; }
+
+    if ( Sin < maxdiff + 0.01 && samerange ) {
+        return +1;
+    } 
+    if ( Sin > maxdiff + 0.01 || !samerange ) {
+        return -1;
+    }    
+}
+
 /*double Chi(double Theta_i, double Theta_j) {  //Chi definita col normalizer, problema delle lucciole che rimangono indietro e non vengono notate
 
     int theta_i = normalizer(Theta_i);

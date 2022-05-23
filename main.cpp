@@ -6,7 +6,7 @@
 #include "sync.h"
 
 using namespace boost::numeric::odeint;
-double N = 500;  //Kuramoto parameters   
+double N = 20;  //Kuramoto parameters   
 double K = 50;                         
 
 double k = 0.1; //Cucker-Smale parameters
@@ -14,7 +14,7 @@ double sigma = 1;
 double beta = 1/7;
 double R = 10;
 
-double n_c = 450; //Parisi parameter
+double n_c = 5; //Parisi parameter  (# of topological neighbours)
 
 double t = 0.0;    //time related parameters
 size_t nSteps = 200;
@@ -156,7 +156,7 @@ int main(){
     } 
 */
     
-    if ( n <= 10 ) { 
+    if ( n <= 20 ) { 
         for (int i=0; i<n; i++){        //printing Adjacency matrix
             for (int j=0; j<n; j++){
                 std::cout<< Adj[i][j] << '\t';
@@ -180,8 +180,7 @@ int main(){
     runge_kutta4<state_type> rk4; 
 
     int counter=0;
-    int jump_start = 0;
-    std::vector<int> jumpStart(n);
+    std::vector<double> x_new = Phases_generator(n);
 
     for ( int ii=0; ii<nSteps; ++ii ){  //Integration loop
 
@@ -207,10 +206,9 @@ int main(){
                     l += 1;
                 }
             }
-            //std::cout << "m value was: " <<m<< " and l value was: " <<l<< " so m-l/N was: " << (m-l)/N << '\n'; 
 
             if (t==0) {
-                check << m << '\t' << l << '\t' << N << '\n'; 
+                check << m << '\t' << l << '\t' << '\n'; 
             }
             
             sync << t <<'\t'<< (m-l)/N << '\n';
@@ -219,20 +217,31 @@ int main(){
         
         t += dt;    //adjourn current time 
         
-        rk4.do_step(MCU(), x , t, dt);     //perform one integration step. Solution x is overwritten        
+        //rk4.do_step(MCU(), x , t, dt);     //perform one integration step. Solution x is overwritten  
+        for(int i=0; i<n; ++i){     //without integration
+            x[i] += 0.2;
+        }   
 
-        for (int i=0; i<N; ++i){
+        for (int i=0; i<n; ++i){            
+            if (Int[i] < 0) {
+                x[i] -= 0.2;
+            }
+
+            Int[i] = 0;
+        }   
+
+        /*for (int i=0; i<N; ++i){
             //std::cout << "Int["<<i<<"] = " <<Int[i] << '\n';
 
             if( Int[i] < 0 ) {         //if the state is incoherent i-th element will stay there longer (aka the state will still be that of x_t)
-                x[i] = x_t[i];
+                x[i] = x_t[i];   //******************+QUESTO E' SBAGLIATO*****************
                 //std::cout << i << " was reset in its t-1 state at time " << t << " as Int[i] was " << Int[i] << '\n';
             }
 
             Int[i] = 0;   //reset Interaction for the new step
             
 
-        }
+        }*/
 
 
         fout << t << '\t';      //print solution at time t    
@@ -248,25 +257,25 @@ int main(){
 
             for (int i=0; i<N; ++i) {
                 
-                x_t[i] = x[i]; //saving states in x_t[i]
+                //x_t[i] = x[i]; //saving states in x_t[i]   //ERROREE NON FARLO
 
                 //std::cout << "evaluating interaction term for " <<i<< '\n';
 
                 for (int j=0; j<N; ++j){
 
-                    if (i != j) {                             //probably not needed as Chi(i,i) = +1 but Adj[i][i] = 0 
+                    //if (i != j) {                             //probably not needed as Chi(i,i) = +1 but Adj[i][i] = 0 
 
-                        if( Adj[i][j] != 0 ) {
+                        //if( Adj[i][j] != 0 ) {
 
-                            Int[i] += (1/N)* ( Adj[i][j] * Chi(x[i] , x[j], maxdiff) ) ;   //saving interaction terms 
+                            Int[i] += /*(1/N)**/ ( Adj[i][j] * Chi(x[i] , x[j], maxdiff) ) ;   //saving interaction terms
                             /*if (t>130 && t<140){
                                 
                                     std::cout <<"Adj["<<i<<"]["<<j<<"]"<< " was: " << Adj[i][j] <<'\n';
                                     std::cout <<"Chi(i,j) was " << Chi(x[i] , x[j], maxdiff) << " as i was " <<x[i]<< " and j was " <<x[j] <<'\n';
                                     std::cout <<"the term added to Int["<<i<<"]"<< " was " << Adj[i][j] * Chi(x[i] , x[j], maxdiff ) <<'\n';
                             } */
-                        }
-                    }   
+                        //}
+                    //}   
                 }
                 //std::cout << "interaction term for " <<i<< " at time " <<t<< " was " << Int[i] << '\n';
             }
@@ -277,11 +286,18 @@ int main(){
                 counter += 1;
             }      
         }
-        std::cout<< "at time " <<t<< "there were " <<counter<< " negative interaction terms on a total of " <<n<< '\n';
+        /*std::cout<< "at time " <<t<< "there were " <<counter<< " negative interaction terms on a total of " <<n<< '\n';
         if ( counter >= n-1 ) { 
             std::cout << "******ERROR****** : every interaction term was negative; so every firefly stayed in her state and synchronization was impossible to achieve" <<'\n'; 
+            std::cout << "trying reset" <<'\n';
+            state_type x_new = Phases_generator(n);
+            for (int i = 0; i<n; ++i){
+                x[i] = x_new[i];          ///////////**************************ECCOLO PORCOD** ERA STA MERDATAAAAAAAAAAA RESETTARE FACENDO x[i] = x_t[i] sminchia tutto *********************************
+            }
         }
-        counter = 0;         
+        counter = 0;    */     
+
+
 
         //*********************interazione a t random*************************  si può fare in maniera molto più semplice e più pulita con dmod
         /*
