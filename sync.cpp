@@ -26,6 +26,11 @@ int normalizer(double Theta) {
     return theta;
 }
 
+void changeState(double theta){
+    if ( normalizer(theta) == 0 ) { theta = 1;}
+    if ( normalizer(theta) == 1 ) { theta = 0;}
+}
+
 bool sameRange(double Theta_i, double Theta_j) {  
 
     int theta_i = normalizer(Theta_i);
@@ -119,5 +124,63 @@ double CS_entries(double xi, double xj, double yi, double yj, double R, double k
 
     
 
-    
+        //*********************interazione a t random*************************  si può fare in maniera molto più semplice e più pulita con dmod
+        /*
+        //std::cout<< "t = " <<t<<'\n';
+        double s = trunc(t + 0.001);
+        double t1 = t - s;                 //get t1 beetween 0 and 1 (t=198.7 -> t1 = 198.7 - 198 = 0.7)
+        //std::cout<<" t1 = " <<t1<<'\n';
+        if ( t1 < 0 ) { t1 = -t1; }
+        int tf = (t1+0.001)*10;
+        //std::cout << "tf = " <<tf<<'\n';
+        
+
+        if ( t1 < 0.001 ) {         //which is every second (every 10dt), for example 196.0 -> 0.0, 197.0 -> 0.0 ...
+
+            std::random_device rd;  
+            std::mt19937 seed(rd()); 
+            std::uniform_int_distribution<int> t_dist(1, 9);
+            Tr += t_dist(seed);
+
+        }
+        //std::cout<< " Tr = " <<Tr<<'\n';
+        //std::cout<< " Tf-T = " <<tf-Tr<<'\n';
+        
+        if ( (Tr != 0) && (tf>=Tr) && ( tf - Tr < 0.001 ) ) {
+            std::cout << "interaction at t = " <<t << '\n';
+
+            for (int i=0; i<n; ++i) {
+
+                //jumpStart[i] = 0;
+                
+                x_t[i] = x[i]; //saving states in x_t[i]
+
+                for (int j=0; j<N; ++j){
+
+                    if (i != j) {                             //needed for Chi(i,i) = +1, not needed for Adj[i][i] = 0 
+
+                        if( Adj[i][j] != 0 ) {
+
+                            Int[i] += (1/N) *   ( Adj[i][j] * Chi(x[i] , x[j], maxdiff) ) ;   //saving interaction terms 
+
+                        }
+                    }   
+                }
+
+            }
+            Tr=0;
+
+            for (int i=0; i<n; i++) {
+                if( Int[i] < 0 ) {  
+                    counter += 1;
+                }      
+            }
+            //std::cout<< "at time " <<t<< "there were " <<counter<< " negative interaction terms on a total of " <<n<< '\n';
+            if ( counter >= n-1 ) { 
+                //std::cout << "******ERROR****** : every interaction term was negative; so every firefly would have stayed in her state and synchronization would have been impossible to achieve" <<'\n'; 
+                }
+            }
+            counter = 0;                   
+
+        } */
 

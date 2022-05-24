@@ -22,6 +22,7 @@ double dt = 0.1;
 double T = 5*dt;
 double maxdiff = 0.001;
 int Tr = 0;
+double t1 = -10;
 
 double L = 30;  //box dimension
 
@@ -43,8 +44,7 @@ struct MCU{             //functor to be passed to do_step for the integration
 
 int main(){
 
-    state_type x(N);   // Initial condition, vector of N elements (N ODEs)
-    state_type x1(N);      
+    state_type x(N);   // Initial condition, vector of N elements (N ODEs)    
 
     state_type x_t(N);  //needed to save the solution before it's overwritten
     state_type Int(N);  //interaction terms 
@@ -156,7 +156,7 @@ int main(){
     } 
 */
     
-    if ( n <= 20 ) { 
+    if ( n <= 10 ) { 
         for (int i=0; i<n; i++){        //printing Adjacency matrix
             for (int j=0; j<n; j++){
                 std::cout<< Adj[i][j] << '\t';
@@ -180,7 +180,8 @@ int main(){
     runge_kutta4<state_type> rk4; 
 
     int counter=0;
-    std::vector<double> x_new = Phases_generator(n);
+    std::vector<int> to_change(n);
+    double t2 = -15;
 
     for ( int ii=0; ii<nSteps; ++ii ){  //Integration loop
 
@@ -214,21 +215,22 @@ int main(){
             sync << t <<'\t'<< (m-l)/N << '\n';
 
         }
-        
-        t += dt;    //adjourn current time 
+
+        fout << t << '\t';      //print solution at time t    
+        for (int i=0; i<N; i++) {
+            fout << x[i] << '\t';
+        }
+        fout << '\n';          
         
         //rk4.do_step(MCU(), x , t, dt);     //perform one integration step. Solution x is overwritten  
-        for(int i=0; i<n; ++i){     //without integration
-            x[i] += 0.2;
-        }   
 
-        for (int i=0; i<n; ++i){            
-            if (Int[i] < 0) {
-                x[i] -= 0.2;
+        /*for (int i=0; i<n; ++i){       //without integration      
+            if (Int[i] > -0.0000001 ) {
+                x[i] += 0.2;
             }
 
             Int[i] = 0;
-        }   
+        }*/
 
         /*for (int i=0; i<N; ++i){
             //std::cout << "Int["<<i<<"] = " <<Int[i] << '\n';
@@ -241,27 +243,20 @@ int main(){
             Int[i] = 0;   //reset Interaction for the new step
             
 
-        }*/
+        }*/ 
 
+        //****************************interazione a t = T, t = T-dt***************************************//
 
-        fout << t << '\t';      //print solution at time t    
-        for (int i=0; i<N; i++) {
-            fout << x[i] << '\t';
-        }
-        fout << '\n';   
-
-        //*****************interazione a t = T, t = T-dt***************************************
-
-        if ( ( t!=0 ) && ( t == 0.4 || dmod(t , T , 10) == 0 || dmod(t-(4*dt) , T , 10) == 0 ) ) {     
+        if ( ( t!=0 ) && ( t == 0 +(T-dt) || dmod(t , T , 10) == 0 || dmod(t-(T-dt) , T , 10) == 0 ) ) {     
             std::cout << "interaction at t = " <<t << '\n';
 
-            for (int i=0; i<N; ++i) {
+            for (int i=0; i<n; ++i) {
                 
                 //x_t[i] = x[i]; //saving states in x_t[i]   //ERROREE NON FARLO
 
                 //std::cout << "evaluating interaction term for " <<i<< '\n';
 
-                for (int j=0; j<N; ++j){
+                for (int j=0; j<n; ++j){
 
                     //if (i != j) {                             //probably not needed as Chi(i,i) = +1 but Adj[i][i] = 0 
 
@@ -286,88 +281,55 @@ int main(){
                 counter += 1;
             }      
         }
-        /*std::cout<< "at time " <<t<< "there were " <<counter<< " negative interaction terms on a total of " <<n<< '\n';
+        std::cout<< "at time " <<t<< "there were " <<counter<< " negative interaction terms on a total of " <<n<< '\n';
         if ( counter >= n-1 ) { 
             std::cout << "******ERROR****** : every interaction term was negative; so every firefly stayed in her state and synchronization was impossible to achieve" <<'\n'; 
-            std::cout << "trying reset" <<'\n';
+            /*std::cout << "trying reset" <<'\n';
             state_type x_new = Phases_generator(n);
             for (int i = 0; i<n; ++i){
-                x[i] = x_new[i];          ///////////**************************ECCOLO PORCOD** ERA STA MERDATAAAAAAAAAAA RESETTARE FACENDO x[i] = x_t[i] sminchia tutto *********************************
-            }
+                x[i] = x_new[i];          ///////////**************************ERRORE QUI, PRIMA FACEVO x[i] = x_t[i] sminchia tutto se integri*********************************
+            }*/
         }
-        counter = 0;    */     
-
-
-
-        //*********************interazione a t random*************************  si può fare in maniera molto più semplice e più pulita con dmod
-        /*
-        //std::cout<< "t = " <<t<<'\n';
-        double s = trunc(t + 0.001);
-        double t1 = t - s;                 //get t1 beetween 0 and 1 (t=198.7 -> t1 = 198.7 - 198 = 0.7)
-        //std::cout<<" t1 = " <<t1<<'\n';
-        if ( t1 < 0 ) { t1 = -t1; }
-        int tf = (t1+0.001)*10;
-        //std::cout << "tf = " <<tf<<'\n';
+        counter = 0;  
         
+        t += dt;    //adjourn current time   
 
-        if ( t1 < 0.001 ) {         //which is every second (every 10dt), for example 196.0 -> 0.0, 197.0 -> 0.0 ...
-
-            std::random_device rd;  
-            std::mt19937 seed(rd()); 
-            std::uniform_int_distribution<int> t_dist(1, 9);
-            Tr += t_dist(seed);
-
-        }
-        //std::cout<< " Tr = " <<Tr<<'\n';
-        //std::cout<< " Tf-T = " <<tf-Tr<<'\n';
-        
-        if ( (Tr != 0) && (tf>=Tr) && ( tf - Tr < 0.001 ) ) {
-            std::cout << "interaction at t = " <<t << '\n';
-
+        if ( ( t!=0 ) && ( dmod(t , T , 10) == 0 ) )  {         //per t=T le lucciole cambiano stato...
             for (int i=0; i<n; ++i) {
-
-                //jumpStart[i] = 0;
-                
-                x_t[i] = x[i]; //saving states in x_t[i]
-
-                for (int j=0; j<N; ++j){
-
-                    if (i != j) {                             //needed for Chi(i,i) = +1, not needed for Adj[i][i] = 0 
-
-                        if( Adj[i][j] != 0 ) {
-
-                            Int[i] += (1/N) *   ( Adj[i][j] * Chi(x[i] , x[j], maxdiff) ) ;   //saving interaction terms 
-
-                        }
-                    }   
+                if ( Int[i] > -0.00000001 ) {
+                    changeState(x[i]);
                 }
-
+                else if ( Int[i] < -0.00000001 ) {    // ...a meno che il termine di interazione sia negativo: in quel caso rimangono per un altro step
+                    to_change[i] = 1;               //mi salvo l'indice della lucciola da cambiare allo step successivo
+                    std::cout << "interaction term for " <<i<< " was negative at t= " <<t<< " so it will stay in its state for another step" <<'\n';
+                }
             }
-            Tr=0;
+        }
 
+        if ( ( t!=0 ) && dmod(t , t-(T+dt) , 10) == 0 ) {   //quindi vado a cambiargli stato a T+dt
             for (int i=0; i<n; i++) {
-                if( Int[i] < 0 ) {  
-                    counter += 1;
-                }      
-            }
-            //std::cout<< "at time " <<t<< "there were " <<counter<< " negative interaction terms on a total of " <<n<< '\n';
-            if ( counter >= n-1 ) { 
-                //std::cout << "******ERROR****** : every interaction term was negative; so every firefly would have stayed in her state and synchronization would have been impossible to achieve" <<'\n'; 
-                
-                for (int k=0; k<n; ++k) {   //resettando alcuni termini di interazione a +1 non si sistema nulla; all'interazione successiva vengono di nuovo valutati come negativi 
-                    if (k % 10 == 0) {
-                        Int[k] = +1;
-                        //std::cout<< "Int[" <<k<< "] was set to +1 to fix error" <<'\n'; 
-                        jumpStart[k] = 1;    //the k-th term of Int[i] will not be reset to 0 until next interaction
-                    }
+                if ( (to_change[i] != 0) && (Int[i] > -0.000000001) ) {
+                    std::cout << "changing x[" <<i<< "] state at t= " <<t<< '\n';
+                    changeState(x[i]);
+                    to_change[i] = 0;
                 }
-                std::cout << "some interaction terms were set to +1 in order to make synchronization achievable again" <<'\n';
-                
-
+                else if ( (to_change[i] != 0) && (Int[i] < -0.000000001) ) {
+                    std::cout << "x[" <<i<< "] should have been changed but its interaction term was still negative at T+dt; it will wait another step" <<'\n';
+                    t2 = t+dt;
+                }
             }
-            counter = 0;                   
+        }
 
-        } */
+        if ( t == t2 ){
+            for (int i = 0; i<n; ++i) {
+                std::cout << "changing x[" <<i<< "] at t= " <<t<< "after 2 steps in its state" <<'\n';
+                changeState(x[i]);
+                t2= -15;
+            }
+        }
+        for (int i=0; i<n; ++i) {
+            Int[i] = 0;                 //resetto il termine di interazione
+        }
 
     }
     check.close();
