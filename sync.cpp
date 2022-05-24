@@ -26,9 +26,9 @@ int normalizer(double Theta) {
     return theta;
 }
 
-void changeState(double theta){
-    if ( normalizer(theta) == 0 ) { theta = 1;}
-    if ( normalizer(theta) == 1 ) { theta = 0;}
+void changeState(double& theta){
+    if ( theta < 0.1 ) { theta = 1; }
+    else if ( theta > 0.9 ) { theta = 0; }
 }
 
 bool sameRange(double Theta_i, double Theta_j) {  
@@ -122,7 +122,77 @@ double CS_entries(double xi, double xj, double yi, double yj, double R, double k
 
 }
 
+
+    //(*)
+        //rk4.do_step(MCU(), x , t, dt);     //perform one integration step. Solution x is overwritten  
+        /*for (int i=0; i<N; ++i){
+            //std::cout << "Int["<<i<<"] = " <<Int[i] << '\n';
+
+            if( Int[i] < 0 ) {         //if the state is incoherent i-th element will stay there longer (aka the state will still be that of x_t)
+                x[i] = x_t[i];   //******************+QUESTO E' SBAGLIATO*****************
+                //std::cout << i << " was reset in its t-1 state at time " << t << " as Int[i] was " << Int[i] << '\n';
+            }
+
+            Int[i] = 0;   //reset Interaction for the new step
+            
+
+        }*/
+
+//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+//prova che avevo fatto per avere tutte le lucciole con 0 ed 1 ma non sapevo come farle continuare col loro periodo dopo che si erano stoppate e non farle flashare tutte a t = kT
     
+/*if ( ( t!=0 ) && ( dmod(t , T , 10) == 0 ) )  {         //per t=T le lucciole cambiano stato...
+            for (int i=0; i<N; ++i) {
+                if ( Int[i] > -0.00000001 ) {
+                    //std::cout << "changing x[" <<i<< "]" << " at time t=T= " <<t<< '\n';
+                    //std::cout << "previous state was " << x[i] << '\n';
+                    //changeState(x[i]);
+                    x[i] += 0.2;
+                    //std::cout << "new state is " << x[i] << '\n';
+                }
+                else if ( Int[i] < -0.00000001 ) {    // ...a meno che il termine di interazione sia negativo: in quel caso rimangono per un altro step
+                    to_change[i] = 1;               //mi salvo l'indice della lucciola da cambiare allo step successivo
+                    //std::cout << "interaction term for " <<i<< " was negative at t= " <<t<< " so it will stay in its state for another step" <<'\n';
+                    t1 = t+dt;
+                }
+            }
+        }
+
+        if ( t == t1 ) {   //quindi vado a cambiargli stato a T+dt
+            t1 = -15;
+            for (int i=0; i<n; i++) {
+                if ( (to_change[i] != 0) && (Int[i] > -0.000000001) ) {
+                    //std::cout << "changing x[" <<i<< "] state at t= " <<t<< '\n';
+                    //std::cout << "previous state was " << x[i] << '\n';
+                    //changeState(x[i]);
+                    x[i] += 0.2;
+                    //std::cout << "new state is " << x[i] << '\n';
+                    to_change[i] = 0;
+                }
+                else if ( (to_change[i] != 0) && (Int[i] < -0.000000001) ) {
+                    //std::cout << "x[" <<i<< "] should have been changed but its interaction term was still negative at T+dt; it will wait another step" <<'\n';
+                    t2 = t+dt;
+                }
+            }
+        }
+
+        if ( t == t2 ){
+            for (int i = 0; i<n; ++i) {
+                if ( to_change[i] != 0 ) {
+                    //std::cout << "changing x[" <<i<< "] at t= " <<t<< "after 2 steps in its state" <<'\n';
+                    //changeState(x[i]);
+                    x[i] += 0.2;
+                    to_change[i] = 0;
+                }
+                t2= -15;
+            }
+        } 
+        for (int i=0; i<n; ++i) {
+            Int[i] = 0;                 //resetto il termine di interazione
+        } */
+
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
 
         //*********************interazione a t random*************************  si può fare in maniera molto più semplice e più pulita con dmod
         /*
