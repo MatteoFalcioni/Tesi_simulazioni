@@ -26,6 +26,14 @@ int normalizer(double Theta) {
     return theta;
 }
 
+int normalizer_pi(double theta) {
+    double pi = M_PI;
+    while (theta > 2*pi) { theta -= 2*pi; }
+
+    if ( theta >= 0 && theta < pi ){ return 0; }
+    if ( theta >= pi && theta <= 2*pi ) { return 1; }
+}
+
 void changeState(double& theta){
     if ( theta < 0.1 ) { theta = 1; }
     else if ( theta > 0.9 ) { theta = 0; }

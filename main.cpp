@@ -6,7 +6,7 @@
 #include "sync.h"
 
 using namespace boost::numeric::odeint;
-double N = 500;  //Kuramoto parameters   
+double N = 1000;  //Kuramoto parameters   
 double K = 50;                         
 
 double k = 0.1; //Cucker-Smale parameters
@@ -14,15 +14,17 @@ double sigma = 1;
 double beta = 1/7;
 double R = 10;
 
-double n_c = 100; //Parisi parameter  (# of topological neighbours)
+double n_c = 3; //Parisi parameter  (# of topological neighbours)
 
 double t = 0.0;    //time related parameters
-size_t nSteps = 40;
+size_t nSteps = 500;
 double dt = 0.1;
 double T = 5*dt;
 double maxdiff = 0.001;
 
 double L = 30;  //box dimension
+
+constexpr double pi = M_PI; 
 
 //**********************//
 int Model_type = 1;     ////////  choose model: 0 = Cucker-Smale, metric interaction. 1 = Parisi, topological  ////////  
@@ -221,14 +223,15 @@ int main(){
                 //std::cout << "evaluating interaction term for " <<i<< '\n';
 
                 for (int j=0; j<n; ++j){
+                    //provo con sin (xj -xi) o con tanh invece che con Chi 
+                    Int[i] += (1/N)* Adj[i][j] * tanh(x[j]-x[i])  /*Chi(x[i] , x[j], maxdiff)*/  ;   //saving interaction terms
                             
-                    Int[i] += (1/N)* Adj[i][j] * Chi(x[i] , x[j], maxdiff)  ;   //saving interaction terms
-                            
-                    if (t>3 && t<4){
+                    if (t>1 && t<2){
                                 
-                        std::cout <<"Adj["<<i<<"]["<<j<<"]"<< " was: " << Adj[i][j] <<'\n';
-                        std::cout <<"Chi(i,j) was " << Chi(x[i] , x[j], maxdiff) << " as i was " <<x[i]<< " and j was " <<x[j] <<'\n';
-                            std::cout <<"the term added to Int["<<i<<"]"<< " was " << Adj[i][j] * Chi(x[i] , x[j], maxdiff ) <<'\n';
+                        //std::cout <<"Adj["<<i<<"]["<<j<<"]"<< " was: " << Adj[i][j] <<'\n';
+                        //std::cout <<"Chi(i,j) was " << Chi(x[i] , x[j], maxdiff) << " as i was " <<x[i]<< " and j was " <<x[j] <<'\n';
+                        //std::cout <<" sin(xj-xi) was " << sin(x[j]-x[i]) << " as i was " <<x[i]<< " and j was " << x[j]<< '\n';
+                        //std::cout <<"the term added to Int["<<i<<"]"<< " was " << Adj[i][j] * Chi(x[i] , x[j], maxdiff ) <<'\n';
                     }    
                 }
                 //std::cout << "interaction term for " <<i<< " at time " <<t<< " was " << Int[i] << '\n';
@@ -243,20 +246,21 @@ int main(){
         if ( counter > 0 ) { std::cout<< "at time " <<t<< "there were " <<counter<< " negative interaction terms on a total of " <<n<< '\n'; }
         if ( counter >= n-1 ) { 
             std::cout << "******ERROR****** : every interaction term was negative; so every firefly stayed in her state and synchronization was impossible to achieve" <<'\n'; 
-            std::cout << "trying reset" <<'\n';
+            /*std::cout << "trying reset" <<'\n';
             state_type x_new = Phases_generator(n);
             for (int i = 0; i<n; ++i){
                 x[i] = x_new[i];          
                 Int[i] = 0;
-            }
+            }*/
         }
         counter = 0;  
         
         t += dt;    //adjourn current time   
 
         for (int i=0; i<n; ++i){       //without integration      
-            if (Int[i] > -0.0000001 ) {
+            if ( (Int[i] > 0) || (Int[i]==0) ) {
                 x[i] += 0.2;
+                //x[i] += (2*pi)/10;
             }
 
             Int[i] = 0;
@@ -268,7 +272,3 @@ int main(){
     sync.close();
 
 }
-
-
-//SEMPRE LO STESSO PROBLEMA: IL TERMINE DI INTERAZIONE RISULTA NEGATIVO PER TUTTE: QUESTO LE PORTA A FERMARSI CONTEMPORANEAMENTE NELLO STATO IN CUI SONO. COSI' NON SI SINCRONIZZANO MAI...
-//COSA LO CAUSA??
