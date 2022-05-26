@@ -19,6 +19,6 @@ std::vector<double> Positions_generator(double L, int N);
 
 double CS_entries(double xi, double xj, double yi, double yj, double R, double k, double sigma, double beta);
 
-std::vector<double> move (std::vector<double>& pos, double L, double res);
+void move (std::vector<double>& pos, double L, double res);
 
 #endif 

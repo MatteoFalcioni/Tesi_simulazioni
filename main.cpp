@@ -9,15 +9,15 @@ using namespace boost::numeric::odeint;
 double N = 1000;  //Kuramoto parameters   
 double K = 50;                         
 
-double k = 0.1; //Cucker-Smale parameters
+double k = 1; //Cucker-Smale parameters
 double sigma = 1; 
-double beta = 1/7;
+double beta = 1/5;
 double R = 10;
 
-double n_c = 2; //Parisi parameter  (# of topological neighbours)
+double n_c = 3; //Parisi parameter  (# of topological neighbours)
 
 double t = 0.0;    //time related parameters
-size_t nSteps = 100;
+size_t nSteps = 1000;
 double dt = 0.1;
 double T = 5*dt;
 double maxdiff = 0.001;
@@ -27,7 +27,7 @@ double L = 30;  //box dimension
 constexpr double pi = M_PI; 
 
 //**********************//
-int model_type = 2;     ////////  choose model: 1 = Cucker-Smale, metric interaction. 2 = Parisi, topological. 0 = global interaction  ////////  
+int model_type = 1;     ////////  choose model: 1 = Cucker-Smale, metric interaction. 2 = Parisi, topological. 0 = global interaction  ////////  
 //**********************//
 
 typedef std::vector<double> state_type;
@@ -79,7 +79,7 @@ int main(){
                 else if ( i == j ) {
                     Adj[i][j] = 0;
                 }
-                
+
             }
         }
     }
@@ -170,8 +170,6 @@ int main(){
     } 
 */
 
-    int counter=0;
-
     if ( n <= 20 ) { 
         for (int i=0; i<n; i++){        //printing Adjacency matrix
             for (int j=0; j<n; j++){
@@ -195,6 +193,8 @@ int main(){
 
     //create stepper:
     //runge_kutta4<state_type> rk4; 
+
+    int counter=0;
 
     for ( int ii=0; ii<nSteps; ++ii ){  //Integration loop
 
@@ -238,8 +238,8 @@ int main(){
                 //std::cout << "evaluating interaction term for " <<i<< '\n';
 
                 for (int j=0; j<n; ++j){
-                    //provo con sin (xj -xi) o con tanh invece che con Chi 
-                    Int[i] += (1/N)* ( Adj[i][j] * sin(x[j]-x[i]) ) ;   //saving interaction terms... sin(x[j]-x[i])
+
+                    Int[i] += (1/N)* ( Adj[i][j] * tanh(x[j]-x[i]) ) ;   //saving interaction terms... sin(x[j]-x[i])
                             
                     /*if (t>1 && t<2){         
                         std::cout <<"Adj["<<i<<"]["<<j<<"]"<< " was: " << Adj[i][j] <<'\n';

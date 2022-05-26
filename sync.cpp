@@ -106,7 +106,7 @@ double CS_entries(double xi, double xj, double yi, double yj, double R, double k
 
 }
 
-std::vector<double> move (std::vector<double>& pos, double L, double res){
+void move (std::vector<double>& pos, double L, double res){
 
     int n = pos.size();
     double dx = L/res;
@@ -133,7 +133,6 @@ std::vector<double> move (std::vector<double>& pos, double L, double res){
         
     }
 
-    return pos;
 }
 
 
