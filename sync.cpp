@@ -18,7 +18,6 @@ int dmod(double t_, double T_, double res) {
 
 }
 
-
 int normalizer(double Theta) {
     int theta = trunc(Theta + 0.01);       //truncs theta in the proper range (2.7 --> 2)
     if (theta % 2 == 0) { theta = 0; }  //odd range -> off, even range -> on
@@ -26,10 +25,6 @@ int normalizer(double Theta) {
     return theta;
 }
 
-void changeState(double& theta){
-    if ( theta < 0.1 ) { theta = 1; }
-    else if ( theta > 0.9 ) { theta = 0; }
-}
 
 bool sameRange(double Theta_i, double Theta_j) {  
 
@@ -66,17 +61,6 @@ double Chi(double theta_i, double theta_j, double maxdiff) {  //to be synchroniz
         return -1;
     } 
 }
-
-/*double Chi(double Theta_i, double Theta_j) {  //Chi definita col normalizer, problema delle lucciole che rimangono indietro e non vengono notate
-
-    int theta_i = normalizer(Theta_i);
-    int theta_j = normalizer(Theta_j); 
-
-    int Phase_diff = theta_i - theta_j;
-
-    if (Phase_diff == 0) { return +1; } //fasi coerenti (0,0) o (1,1)
-    if (Phase_diff != 0) { return -1; } //fasi incoerenti (1,0) o (0,1)
-}*/
 
 std::vector<double> Phases_generator(int N){
     std::vector<double> Phases(N);
@@ -121,6 +105,50 @@ double CS_entries(double xi, double xj, double yi, double yj, double R, double k
     }
 
 }
+
+std::vector<double> move (std::vector<double>& pos, double L, double res){
+
+    int n = pos.size();
+    double dx = L/res;
+
+    std::random_device rd;  
+    std::mt19937 seed(rd()); 
+    std::uniform_real_distribution<double> distribution(0.0,1.0);
+
+    for (int i=0; i<n; i++){
+        double rand = distribution(seed);
+        double way = distribution(seed);
+        
+        if (rand <= 0.5){       //50% di probabilità che si muova o meno
+            if (way < 0.5) {    //50% di probabilità che vada nella direzione positiva o negativa
+                pos[i] += dx;
+            }
+            else if (way > 0.5){
+                pos[i] -= dx;
+            }
+        } 
+
+        if ( pos[i] > L ) { pos[i] -= L; }      //pareti periodiche
+        if ( pos[i] < -L ) { pos[i] += L; }
+        
+    }
+
+    return pos;
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
     //(*)

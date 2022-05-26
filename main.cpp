@@ -32,7 +32,7 @@ int Model_type = 1;     ////////  choose model: 0 = Cucker-Smale, metric interac
 
 typedef std::vector<double> state_type;
 
-struct MCU{             //functor to be passed to do_step for the integration
+/*struct MCU{             //functor to be passed to do_step for the integration
     void operator() (const state_type &x, state_type &dxdt, const double t) {
         
         for(int i=0; i<N; ++i){    
@@ -40,7 +40,7 @@ struct MCU{             //functor to be passed to do_step for the integration
         }
 
     }
-};
+};*/
 
 int main(){
 
