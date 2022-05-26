@@ -6,7 +6,7 @@
 #include "sync.h"
 
 using namespace boost::numeric::odeint;
-double N = 20;  //Kuramoto parameters   
+double N = 1000;  //Kuramoto parameters   
 double K = 50;                         
 
 double k = 0.1; //Cucker-Smale parameters
@@ -27,7 +27,7 @@ double L = 30;  //box dimension
 constexpr double pi = M_PI; 
 
 //**********************//
-int Model_type = 1;     ////////  choose model: 0 = Cucker-Smale, metric interaction. 1 = Parisi, topological  ////////  
+int model_type = 2;     ////////  choose model: 1 = Cucker-Smale, metric interaction. 2 = Parisi, topological. 0 = global interaction  ////////  
 //**********************//
 
 typedef std::vector<double> state_type;
@@ -69,7 +69,22 @@ int main(){
         }
     }
 
-    if (Model_type == 0){   //Cucker-Smale
+    if (model_type == 0) {      //global interaction
+        for (int i=0; i<n; ++i) {
+            for (int j=0; j<n; ++j) {
+
+                if ( i!=j ) {
+                    Adj[i][j] = 1;
+                }
+                else if ( i == j ) {
+                    Adj[i][j] = 0;
+                }
+                
+            }
+        }
+    }
+
+    if (model_type == 1){   //Cucker-Smale
         for (int i=0; i<n; i++){    //filling Adjacency matrix 
 
             double xi = Xpos[i];
@@ -90,7 +105,7 @@ int main(){
         }
     } 
 
-    else if (Model_type == 1){  //Parisi
+    else if (model_type == 2){  //Parisi
         for (int i=0; i<n; i++){
             double xi = Xpos[i];
             double yi = Ypos[i];
