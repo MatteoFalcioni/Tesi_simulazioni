@@ -26,14 +26,6 @@ int normalizer(double Theta) {
     return theta;
 }
 
-int normalizer_pi(double theta) {
-    double pi = M_PI;
-    while (theta > 2*pi) { theta -= 2*pi; }
-
-    if ( theta >= 0 && theta < pi ){ return 0; }
-    if ( theta >= pi && theta <= 2*pi ) { return 1; }
-}
-
 void changeState(double& theta){
     if ( theta < 0.1 ) { theta = 1; }
     else if ( theta > 0.9 ) { theta = 0; }
@@ -67,7 +59,7 @@ double Chi(double theta_i, double theta_j, double maxdiff) {  //to be synchroniz
 
     if ( phase_diff < maxdiff + 0.01 && samerange ) {
         //std::cout << "and therefore Chi returned +1" <<'\n';
-        return +1;
+        return 0;
     } 
     if ( phase_diff > maxdiff + 0.01 || !samerange ) {
         //std::cout << "and therefore Chi returned -1" <<'\n';

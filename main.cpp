@@ -6,7 +6,7 @@
 #include "sync.h"
 
 using namespace boost::numeric::odeint;
-double N = 1000;  //Kuramoto parameters   
+double N = 20;  //Kuramoto parameters   
 double K = 50;                         
 
 double k = 0.1; //Cucker-Smale parameters
@@ -14,10 +14,10 @@ double sigma = 1;
 double beta = 1/7;
 double R = 10;
 
-double n_c = 3; //Parisi parameter  (# of topological neighbours)
+double n_c = 2; //Parisi parameter  (# of topological neighbours)
 
 double t = 0.0;    //time related parameters
-size_t nSteps = 500;
+size_t nSteps = 100;
 double dt = 0.1;
 double T = 5*dt;
 double maxdiff = 0.001;
@@ -157,7 +157,7 @@ int main(){
 
     int counter=0;
 
-    if ( n <= 10 ) { 
+    if ( n <= 20 ) { 
         for (int i=0; i<n; i++){        //printing Adjacency matrix
             for (int j=0; j<n; j++){
                 std::cout<< Adj[i][j] << '\t';
@@ -224,22 +224,21 @@ int main(){
 
                 for (int j=0; j<n; ++j){
                     //provo con sin (xj -xi) o con tanh invece che con Chi 
-                    Int[i] += (1/N)* Adj[i][j] * tanh(x[j]-x[i])  /*Chi(x[i] , x[j], maxdiff)*/  ;   //saving interaction terms
+                    Int[i] += (1/N)* ( Adj[i][j] * sin(x[j]-x[i]) ) ;   //saving interaction terms... sin(x[j]-x[i])
                             
-                    if (t>1 && t<2){
-                                
-                        //std::cout <<"Adj["<<i<<"]["<<j<<"]"<< " was: " << Adj[i][j] <<'\n';
+                    /*if (t>1 && t<2){         
+                        std::cout <<"Adj["<<i<<"]["<<j<<"]"<< " was: " << Adj[i][j] <<'\n';
                         //std::cout <<"Chi(i,j) was " << Chi(x[i] , x[j], maxdiff) << " as i was " <<x[i]<< " and j was " <<x[j] <<'\n';
-                        //std::cout <<" sin(xj-xi) was " << sin(x[j]-x[i]) << " as i was " <<x[i]<< " and j was " << x[j]<< '\n';
-                        //std::cout <<"the term added to Int["<<i<<"]"<< " was " << Adj[i][j] * Chi(x[i] , x[j], maxdiff ) <<'\n';
-                    }    
-                }
+                        std::cout <<" sin(xj-xi) was " << sin(x[j]-x[i]) << '\n';
+                        std::cout <<"the term added to Int["<<i<<"]"<< " was " << (1/N) * Adj[i][j] * sin(x[j]-x[i]) <<'\n';
+                    //} */   
+                } 
                 //std::cout << "interaction term for " <<i<< " at time " <<t<< " was " << Int[i] << '\n';
             }
         } 
 
         for (int i=0; i<n; i++) {
-            if( Int[i] < 0 ) {  
+            if( Int[i] < -0.00000001 ) {  
                 counter += 1;
             }      
         }
@@ -257,10 +256,23 @@ int main(){
         
         t += dt;    //adjourn current time   
 
+        /*for (int i=0; i<n; ++i){ 
+            if (Int[i] == 0) {
+                std::cout << "Int[" <<i<< "] = " <<Int[i]<< " . Its state is: " << x[i] << " ,while the state of its neighbours are: " <<'\n';
+                for (int j=0; j<n; ++j) {
+                    if (Adj[i][j]!=0) {
+                        std::cout << j << " = " << x[j] << '\n';
+                    }
+                }
+                std::cout <<'\n';
+            }
+        }*/
+
         for (int i=0; i<n; ++i){       //without integration      
-            if ( (Int[i] > 0) || (Int[i]==0) ) {
+            if ( (Int[i] > -0.0000001) ) {
+
                 x[i] += 0.2;
-                //x[i] += (2*pi)/10;
+
             }
 
             Int[i] = 0;

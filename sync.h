@@ -10,7 +10,6 @@
 int dmod(double t, double T, double res);
 
 int normalizer(double theta);
-int normalizer_pi(double theta);
 
 void changeState(double& theta);
 
