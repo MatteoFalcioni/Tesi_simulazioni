@@ -9,26 +9,26 @@ using namespace boost::numeric::odeint;
 double N = 1000;  //Kuramoto parameters   
 double K = 50;                         
 
-double k = 1; //Cucker-Smale parameters
+double k = 100;   //Cucker-Smale parameters
 double sigma = 1; 
-double beta = 1/5;
-double R = 10;
+double beta = 5;
+double R = 1.34;
 
-double n_c = 3; //Parisi parameter  (# of topological neighbours)
+double n_c = 6; //Parisi parameter  (# of topological neighbours)
 
 double t = 0.0;    //time related parameters
-size_t nSteps = 1000;
+size_t nSteps = 70;
 double dt = 0.1;
 double T = 5*dt;
 double maxdiff = 0.001;
 
 double L = 30;  //box dimension
 
-constexpr double pi = M_PI; 
-
+//**********************************************************************************************************************************************
 //**********************//
-int model_type = 1;     ////////  choose model: 1 = Cucker-Smale, metric interaction. 2 = Parisi, topological. 0 = global interaction  ////////  
+int model_type = 1;     ////////  choose model: 0 = global interaction. 1 = Cucker-Smale, metric interaction. 2 = Parisi, topological.   ////////  
 //**********************//
+//**********************************************************************************************************************************************
 
 typedef std::vector<double> state_type;
 
@@ -85,10 +85,14 @@ int main(){
     }
 
     if (model_type == 1){   //Cucker-Smale
+
+        double avg_neighbours=0;
         for (int i=0; i<n; i++){    //filling Adjacency matrix 
 
             double xi = Xpos[i];
             double yi = Ypos[i];
+
+            std::vector<double> Ri(n);
 
             for (int j=0; j<n; j++){
 
@@ -100,9 +104,35 @@ int main(){
                 } else if ( j==i ) {
                     Adj[i][j] = 0;
                 }
-        
+
+                //voglio controllare in media quante vicine vede ognuna una volta fissato R, perché almeno deve vederne n_c per comparare i due modelli, poi non voglio che ne veda una marea sennò troppo easy
+                double r_ij = (xj-xi)*(xj-xi) + (yj-yi)*(yj-yi); 
+                double mod_r = std::sqrt(r_ij);                 
+                Ri[j] = mod_r;
+                if ( j==i ) { Ri[j] = 0; }
+
             }
+
+            double i_neighbours = 0; 
+            double dr = 0.001;
+            double r0 = dr*2;
+            double Rmax = R;    
+
+            for (double r=0; r<Rmax; r += r0) {   
+                for (int j=0; j<n; j++) { 
+                    if ( j != i ) {
+                        if ( r < Ri[j]+dr && r > Ri[j]-dr ) {
+                            i_neighbours += 1;
+                        }
+                            
+                    }
+                }                
+            }
+
+            avg_neighbours += (i_neighbours / N);
         }
+        std::cout << " # of average neighbours in metric interaction was " << avg_neighbours << '\n';
+
     } 
 
     else if (model_type == 2){  //Parisi
@@ -239,14 +269,15 @@ int main(){
 
                 for (int j=0; j<n; ++j){
 
-                    Int[i] += (1/N)* ( Adj[i][j] * tanh(x[j]-x[i]) ) ;   //saving interaction terms... sin(x[j]-x[i])
+                    Int[i] += (1/N)* ( Adj[i][j] * Chi(x[j]-x[i]) ) ;   //saving interaction terms
                             
-                    /*if (t>1 && t<2){         
-                        std::cout <<"Adj["<<i<<"]["<<j<<"]"<< " was: " << Adj[i][j] <<'\n';
-                        //std::cout <<"Chi(i,j) was " << Chi(x[i] , x[j], maxdiff) << " as i was " <<x[i]<< " and j was " <<x[j] <<'\n';
-                        std::cout <<" sin(xj-xi) was " << sin(x[j]-x[i]) << '\n';
-                        std::cout <<"the term added to Int["<<i<<"]"<< " was " << (1/N) * Adj[i][j] * sin(x[j]-x[i]) <<'\n';
-                    //} */   
+                    /*if (t>1 && t<2){
+                        if (Adj[i][j] != 0) {         
+                            std::cout <<"Adj["<<i<<"]["<<j<<"]"<< " was: " << Adj[i][j] <<'\n';
+                            std::cout <<"Chi(i,j) was " << Chi(x[j] - x[i]) << " as xj-xi was " <<x[j]-x[i] <<'\n';
+                            std::cout <<"the term added to Int["<<i<<"]"<< " was " << (1/N) * Adj[i][j] * Chi(x[j] - x[i]) <<'\n';
+                        }
+                    } */  
                 } 
                 //std::cout << "interaction term for " <<i<< " at time " <<t<< " was " << Int[i] << '\n';
             }
@@ -271,18 +302,6 @@ int main(){
         
         t += dt;    //adjourn current time   
 
-        /*for (int i=0; i<n; ++i){ 
-            if (Int[i] == 0) {
-                std::cout << "Int[" <<i<< "] = " <<Int[i]<< " . Its state is: " << x[i] << " ,while the state of its neighbours are: " <<'\n';
-                for (int j=0; j<n; ++j) {
-                    if (Adj[i][j]!=0) {
-                        std::cout << j << " = " << x[j] << '\n';
-                    }
-                }
-                std::cout <<'\n';
-            }
-        }*/
-
         for (int i=0; i<n; ++i){       //without integration      
             if ( (Int[i] > -0.0000001) ) {
 
@@ -291,6 +310,10 @@ int main(){
             }
 
             Int[i] = 0;
+        }
+
+        for (int i=0; i<n; ++i ){
+            if ( x[i] > 1.9999 ) { x[i] = 0; }
         }
 
     }

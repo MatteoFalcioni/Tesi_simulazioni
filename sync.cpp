@@ -19,14 +19,20 @@ int dmod(double t_, double T_, double res) {
 }
 
 int normalizer(double Theta) {
-    int theta = trunc(Theta + 0.01);       //truncs theta in the proper range (2.7 --> 2)
+    int theta = trunc(Theta + 0.001);       //truncs theta in the proper range (2.7 --> 2)
     if (theta % 2 == 0) { theta = 0; }  //odd range -> off, even range -> on
     else if (theta % 2 != 0) { theta = 1; }
     return theta;
 }
 
+double Chi(double deltaX) {
+    if (deltaX > 0.001) { return +1; }
+    if (deltaX < -0.001) { return -1; }
+    else if ( deltaX > -0.001 && deltaX < 0.001 ) { return 0; }
+}
 
-bool sameRange(double Theta_i, double Theta_j) {  
+//////////////definizione di Chi che fa sempre o +1 o -1 a seconda che siano sincronizzate o meno
+/*bool sameRange(double Theta_i, double Theta_j) {  
 
     int theta_i = normalizer(Theta_i);
     int theta_j = normalizer(Theta_j); 
@@ -41,26 +47,21 @@ double Chi(double theta_i, double theta_j, double maxdiff) {  //to be synchroniz
 
     bool samerange = sameRange(theta_i, theta_j);
 
-    //std::cout << " initially i and j were i = " <<theta_i<< " j = " <<theta_j<< " so sameRange returned " <<samerange<< '\n';
-    double xi = trunc(theta_i + 0.01);
-    double xj = trunc(theta_j + 0.01);
+    double xi = trunc(theta_i + 0.001);
+    double xj = trunc(theta_j + 0.001);
     theta_i -= xi;
     theta_j -= xj;
-    //std::cout << " after -=x, i and j were i = " <<theta_i<< " j = " <<theta_j<< '\n';
 
     double phase_diff = theta_i - theta_j;
     if ( phase_diff < 0 ) { phase_diff = -phase_diff; }
-    //std::cout << " phase difference was " <<phase_diff<< '\n';
 
-    if ( phase_diff < maxdiff + 0.01 && samerange ) {
-        //std::cout << "and therefore Chi returned +1" <<'\n';
+    if ( phase_diff < maxdiff + 0.001 && samerange ) {
         return 0;
     } 
-    if ( phase_diff > maxdiff + 0.01 || !samerange ) {
-        //std::cout << "and therefore Chi returned -1" <<'\n';
+    if ( phase_diff > maxdiff + 0.001 || !samerange ) {
         return -1;
     } 
-}
+} */
 
 std::vector<double> Phases_generator(int N){
     std::vector<double> Phases(N);
