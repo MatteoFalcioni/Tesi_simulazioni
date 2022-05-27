@@ -9,20 +9,19 @@ using namespace boost::numeric::odeint;
 double N = 1000;  //Kuramoto parameters   
 double K = 50;                         
 
-double k = 100;   //Cucker-Smale parameters
+double k = 1;   //Cucker-Smale parameters
 double sigma = 1; 
-double beta = 5;
-double R = 1.34;
+double beta = 1.0 / 3.0 ; 
+double R = 5;
 
 double n_c = 6; //Parisi parameter  (# of topological neighbours)
 
 double t = 0.0;    //time related parameters
-size_t nSteps = 70;
-double dt = 0.1;
+size_t nSteps = 1000;
+double dt = 0.1; 
 double T = 5*dt;
-double maxdiff = 0.001;
 
-double L = 30;  //box dimension
+double L = 30.0;  //box dimension
 
 //**********************************************************************************************************************************************
 //**********************//
@@ -262,7 +261,7 @@ int main(){
         //****************************interazione a t = T, t = T-dt***************************************//
 
         if ( ( t!=0 ) && ( t == 0 +(T-dt) || dmod(t , T , 10) == 0 || dmod(t-(T-dt) , T , 10) == 0 ) ) {     
-            std::cout << "interaction at t = " <<t << '\n';
+            //std::cout << "interaction at t = " <<t << '\n';
 
             for (int i=0; i<n; ++i) {
                 //std::cout << "evaluating interaction term for " <<i<< '\n';

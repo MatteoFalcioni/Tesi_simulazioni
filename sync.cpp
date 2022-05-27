@@ -31,37 +31,6 @@ double Chi(double deltaX) {
     else if ( deltaX > -0.001 && deltaX < 0.001 ) { return 0; }
 }
 
-//////////////definizione di Chi che fa sempre o +1 o -1 a seconda che siano sincronizzate o meno
-/*bool sameRange(double Theta_i, double Theta_j) {  
-
-    int theta_i = normalizer(Theta_i);
-    int theta_j = normalizer(Theta_j); 
-
-    int Phase_diff = theta_i - theta_j;
-
-    if (Phase_diff == 0) { return true; } //coherent phases (0,0) or (1,1)
-    if (Phase_diff != 0) { return false; } //incoherent phases (1,0) or (0,1)
-}
-
-double Chi(double theta_i, double theta_j, double maxdiff) {  //to be synchronized the fireflies need to be in the same range AND differ less than maxdiff
-
-    bool samerange = sameRange(theta_i, theta_j);
-
-    double xi = trunc(theta_i + 0.001);
-    double xj = trunc(theta_j + 0.001);
-    theta_i -= xi;
-    theta_j -= xj;
-
-    double phase_diff = theta_i - theta_j;
-    if ( phase_diff < 0 ) { phase_diff = -phase_diff; }
-
-    if ( phase_diff < maxdiff + 0.001 && samerange ) {
-        return 0;
-    } 
-    if ( phase_diff > maxdiff + 0.001 || !samerange ) {
-        return -1;
-    } 
-} */
 
 std::vector<double> Phases_generator(int N){
     std::vector<double> Phases(N);
@@ -100,7 +69,7 @@ double CS_entries(double xi, double xj, double yi, double yj, double R, double k
     double mod_r = std::sqrt(r_ij);  //modulo di ri-rj
 
     if ( mod_r <= R ) {
-        return k / std::pow( (sigma*sigma + r_ij) , beta ) ;
+        return ( k / ( std::pow( ((sigma*sigma) + r_ij) , beta ) ) );
     } else if ( mod_r > R ) {
         return 0;
     }
@@ -147,7 +116,37 @@ void move (std::vector<double>& pos, double L, double res){
 
 
 
+//////////////definizione di Chi che fa sempre o +1 o -1 a seconda che siano sincronizzate o meno
+/*bool sameRange(double Theta_i, double Theta_j) {  
 
+    int theta_i = normalizer(Theta_i);
+    int theta_j = normalizer(Theta_j); 
+
+    int Phase_diff = theta_i - theta_j;
+
+    if (Phase_diff == 0) { return true; } //coherent phases (0,0) or (1,1)
+    if (Phase_diff != 0) { return false; } //incoherent phases (1,0) or (0,1)
+}
+
+double Chi(double theta_i, double theta_j, double maxdiff) {  //to be synchronized the fireflies need to be in the same range AND differ less than maxdiff
+
+    bool samerange = sameRange(theta_i, theta_j);
+
+    double xi = trunc(theta_i + 0.001);
+    double xj = trunc(theta_j + 0.001);
+    theta_i -= xi;
+    theta_j -= xj;
+
+    double phase_diff = theta_i - theta_j;
+    if ( phase_diff < 0 ) { phase_diff = -phase_diff; }
+
+    if ( phase_diff < maxdiff + 0.001 && samerange ) {
+        return 0;
+    } 
+    if ( phase_diff > maxdiff + 0.001 || !samerange ) {
+        return -1;
+    } 
+} */
 
 
 
