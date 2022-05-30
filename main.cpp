@@ -11,10 +11,10 @@ double K = 50;
 
 double k = 1;   //Cucker-Smale parameters
 double sigma = 1; 
-double beta = 1.0 / 3.0 ; 
-double R = 5;
+double beta = 8.0 ; 
+double R = 5.0;
 
-double n_c = 6; //Parisi parameter  (# of topological neighbours)
+double n_c = 7.0; //Parisi parameter  (# of topological neighbours)
 
 double t = 0.0;    //time related parameters
 size_t nSteps = 1000;
@@ -25,7 +25,7 @@ double L = 30.0;  //box dimension
 
 //**********************************************************************************************************************************************
 //**********************//
-int model_type = 1;     ////////  choose model: 0 = global interaction. 1 = Cucker-Smale, metric interaction. 2 = Parisi, topological.   ////////  
+int model_type = 0;     ////////  choose model: 0 = global interaction. 1 = Cucker-Smale, metric interaction. 2 = Parisi, topological.   ////////  
 //**********************//
 //**********************************************************************************************************************************************
 
@@ -268,15 +268,16 @@ int main(){
 
                 for (int j=0; j<n; ++j){
 
-                    Int[i] += (1/N)* ( Adj[i][j] * Chi(x[j]-x[i]) ) ;   //saving interaction terms
-                            
-                    /*if (t>1 && t<2){
+                    Int[i] += (1/N)* Adj[i][j] * ( tanh(x[j]-x[i]) + (1/N)*delta(x[j]-x[i]) )  ;   //saving interaction terms
+
+                    /*        
+                    if (t>2 && t<3){
                         if (Adj[i][j] != 0) {         
-                            std::cout <<"Adj["<<i<<"]["<<j<<"]"<< " was: " << Adj[i][j] <<'\n';
-                            std::cout <<"Chi(i,j) was " << Chi(x[j] - x[i]) << " as xj-xi was " <<x[j]-x[i] <<'\n';
-                            std::cout <<"the term added to Int["<<i<<"]"<< " was " << (1/N) * Adj[i][j] * Chi(x[j] - x[i]) <<'\n';
+                            //std::cout <<"Adj["<<i<<"]["<<j<<"]"<< " was: " << Adj[i][j] <<'\n';
+                            //std::cout <<"Chi(i,j) was " << Chi(x[j] - x[i]) << " as xj was " <<x[j] << " and xi was " <<x[i] <<'\n';
+                            //std::cout <<"the term added to Int["<<i<<"]"<< " was " << (1/N) * Adj[i][j] * Chi(x[j] - x[i]) <<'\n';
                         }
-                    } */  
+                    }  */ 
                 } 
                 //std::cout << "interaction term for " <<i<< " at time " <<t<< " was " << Int[i] << '\n';
             }
@@ -287,6 +288,31 @@ int main(){
                 counter += 1;
             }      
         }
+        /*
+            for (int i=0; i<n; i++) {
+                if (t>95 && t<97){
+                    if (Int[i] < 0 ) {
+                        std::cout << "at time t: " <<t<< " negative interaction term for i = " <<i<< '\n';
+                        std::cout << " infact its state was: " << x[i] << " ,while its neighbours were " <<'\n';;
+                        for (int j=0; j<n; ++j){
+                            if (Adj[i][j] != 0) {
+                                std::cout << j << " = " << x[j] <<'\n';
+                                if ( x[j] > x[i]+ 0.001 || x[j] < x[i] - 0.001 ) {
+                                    std::cout << j << " is the one wich can't synchronize: its state is " << x[j] << " and its neighbours are: " <<'\n';
+                                    for (int k=0; k<n; k++) {
+                                        if (Adj[j][k] != 0) {
+                                            std::cout << x[k] << '\n';
+                                        }
+                                    }
+                                    std::cout << " ---------------------------------------------------------- " <<'\n';
+                                }
+                            }
+                        }
+                        std::cout <<'\n';
+                    }
+                }
+            } */
+        
         if ( counter > 0 ) { std::cout<< "at time " <<t<< "there were " <<counter<< " negative interaction terms on a total of " <<n<< '\n'; }
         if ( counter >= n-1 ) { 
             std::cout << "******ERROR****** : every interaction term was negative; so every firefly stayed in her state and synchronization was impossible to achieve" <<'\n'; 

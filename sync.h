@@ -14,6 +14,7 @@ int normalizer(double theta);
 bool sameRange(double Theta_i, double Theta_j);
 //double Chi(double theta_i, double theta_j, double maxdiff);
 double Chi (double deltax);
+double delta (double x);
 
 std::vector<double> Phases_generator(int N);
 std::vector<double> Positions_generator(double L, int N);

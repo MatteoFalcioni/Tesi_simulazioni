@@ -28,9 +28,13 @@ int normalizer(double Theta) {
 double Chi(double deltaX) {
     if (deltaX > 0.001) { return +1; }
     if (deltaX < -0.001) { return -1; }
-    else if ( deltaX > -0.001 && deltaX < 0.001 ) { return 0; }
+    else if ( deltaX > -0.001 && deltaX < 0.001 ) { return +1; }
 }
 
+double delta (double x) {
+    if (x < 0) { x = -x; }
+    if (x < 0.0001) { return 1; }
+}
 
 std::vector<double> Phases_generator(int N){
     std::vector<double> Phases(N);
@@ -107,7 +111,19 @@ void move (std::vector<double>& pos, double L, double res){
 
 
 
+/*
+                if (t>95 && t<97){
+                    std::cout << "at time t: " <<t<< " negative interaction term for i = " <<i<< '\n';
+                    std::cout << " infact its state was" << x[i] << " while its neighbours were ";
+                    for (int j=0; j<n; ++j){
+                        if (Adj[i][j] != 0) {
+                            std::cout << x[j] <<'\t';
+                        }
+                    }
+                    std::cout <<'\n';
+                }
 
+*/
 
 
 
