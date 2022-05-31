@@ -11,8 +11,8 @@ double K = 50;
 
 double k = 1;   //Cucker-Smale parameters
 double sigma = 1; 
-double beta = 8.0 ; 
-double R = 5.0;
+double beta = 7.0 ; 
+double R = 10.0;
 
 double n_c = 7.0; //Parisi parameter  (# of topological neighbours)
 
@@ -25,7 +25,7 @@ double L = 30.0;  //box dimension
 
 //**********************************************************************************************************************************************
 //**********************//
-int model_type = 0;     ////////  choose model: 0 = global interaction. 1 = Cucker-Smale, metric interaction. 2 = Parisi, topological.   ////////  
+int model_type = 1;     ////////  choose model: 0 = global interaction. 1 = Cucker-Smale, metric interaction. 2 = Parisi, topological.   ////////  
 //**********************//
 //**********************************************************************************************************************************************
 
