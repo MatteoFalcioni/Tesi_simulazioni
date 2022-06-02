@@ -31,11 +31,6 @@ double Chi(double deltaX) {
     else if ( deltaX > -0.001 && deltaX < 0.001 ) { return +1; }
 }
 
-double delta (double x) {
-    if (x < 0) { x = -x; }
-    if (x < 0.0001) { return 1; }
-}
-
 std::vector<double> Phases_generator(int N){
     std::vector<double> Phases(N);
 
@@ -108,6 +103,44 @@ void move (std::vector<double>& pos, double L, double res){
     }
 
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
