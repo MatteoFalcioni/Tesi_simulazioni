@@ -6,7 +6,7 @@
 #include "sync.h"
 
 using namespace boost::numeric::odeint;
-double N = 10;  //Kuramoto parameters   
+double N = 20;  //Kuramoto parameters   
 double K = 50;                         
 
 double k = 1;   //Cucker-Smale parameters
@@ -18,10 +18,11 @@ double n_c = 5.0; //Parisi parameter  (# of topological neighbours)
 
 double t = 0.0;    //time related parameters
 size_t nSteps = 500;
-double dt = 0.1; 
+double dt = 0.1;   //time step
 double T = 5*dt;
 
-double L = 3.0;  //box dimension
+double L = 30.0;  //box dimension
+double dx = 0.1;  //spatial step
 
 //**********************************************************************************************************************************************
 //**********************//
@@ -29,17 +30,6 @@ int model_type = 1;     ////////  choose model: 0 = global interaction. 1 = Cuck
 //**********************//
 //**********************************************************************************************************************************************
 
-typedef std::vector<double> state_type;
-
-/*struct MCU{             //functor to be passed to do_step for the integration
-    void operator() (const state_type &x, state_type &dxdt, const double t) {
-        
-        for(int i=0; i<N; ++i){    
-            dxdt[i] = 1/T; 
-        }
-
-    }
-};*/
 
 int main(){
 
@@ -60,12 +50,11 @@ int main(){
     }
     positions.close();
 
-    double Adj2[n][n];
+
     double Adj[n][n];   //Adjacency matrix
     for (int i=0; i<n; ++i) {
         for (int j=0; j<n; ++j) {
             Adj[i][j] = 0;
-            Adj2[i][j] = 0;
         }
     }
 
@@ -84,7 +73,7 @@ int main(){
         }
     }
 
-        
+        /*
             if (model_type == 1){   //Cucker-Smale
 
             double avg_neighbours=0;
@@ -153,11 +142,11 @@ int main(){
                     Ri[j] = mod_r;
                     if ( j==i ) { Ri[j] = 0; }
                 }
-                /*std::cout<< "relative distances from " <<i<< " which is in ( " << Xpos[i] << " , " << Ypos[i] << " ) are: " << '\n';
+                std::cout<< "relative distances from " <<i<< " which is in ( " << Xpos[i] << " , " << Ypos[i] << " ) are: " << '\n';
                 for (int j=0; j<n; j++){
                     std::cout << Ri[j] << '\t';
                 }
-                std::cout <<'\n';*/
+                std::cout <<'\n';
 
                 int i_neighbours = 0;  //conta i vicini di i
                 double dr = 0.001;
@@ -182,13 +171,7 @@ int main(){
                 }
             }
           
-        } 
-
-        for (int i = 0; i<n; i++) {
-            for (int j=0; j<n; j++) {
-                if ( Adj2[i][j] != Adj[i][j] ) { std::cout << "didn't work" <<'\n'; }
-            }
-        }
+        } */
 
 /*
     double sum=0;
@@ -202,7 +185,7 @@ int main(){
         }
         sum = 0;
     } 
-*/
+
 
     if ( n <= 20 ) { 
         for (int i=0; i<n; i++){        //printing Adjacency matrix
@@ -212,17 +195,8 @@ int main(){
             std::cout << '\n';
         } 
     }
-    std::cout <<'\n';
 
-
-    if ( n <= 20 ) { 
-        for (int i=0; i<n; i++){        //printing Adjacency matrix
-            for (int j=0; j<n; j++){
-                std::cout<< Adj2[i][j] << '\t';
-            }
-            std::cout << '\n';
-        } 
-    }    
+*/
 
     for (int i=0; i<N; i++){   //setting initial values for x[i]
         x[i] = Phases[i];
@@ -272,9 +246,25 @@ int main(){
         //****************************interazione a t = T, t = T-dt***************************************//
 
         if ( ( t!=0 ) && ( t == 0 +(T-dt) || dmod(t , T , 10) == 0 || dmod(t-(T-dt) , T , 10) == 0 ) ) {     
-            //std::cout << "interaction at t = " <<t << '\n';
+            std::cout << "interaction at t = " <<t << '\n';
 
-            /*
+            
+            std::vector<double> Xplus;  //contiene la copia delle lucciole tra 0 ed R
+            std::vector<double> Xminus;  //contiene la copia delle lucciole tra L-R ed L
+            std::vector<double> Yplus;
+            std::vector<double> Yminus;
+
+            for(int i=0;i<n;i++){
+                if ( Xpos[i] > 0 && Xpos[i] < R ) {
+                    Xplus.push_back(Xpos[i]);
+                }
+                if ( Xpos[i] > L-R && Xpos[i] < L ) {
+                    Xminus.push_back(Xpos[i]);
+                }
+            }
+            //ora se ho una lucciola che sta tra L-R ed L, ad esempio, devo andare a guardare in Xpos e in Xplus
+            //in più devo ricordarmi che quelle in Xplus corrispondono a quelle in Xpos tra 0 ed R. Questo come lo faccio?
+            
             if (model_type == 1){   //Cucker-Smale
 
                 for (int i=0; i<n; i++){    //filling Adjacency matrix 
@@ -282,17 +272,26 @@ int main(){
                     double xi = Xpos[i];
                     double yi = Ypos[i];
 
-                    std::vector<double> Ri(n);
-
                     for (int j=0; j<n; j++){
 
                         double xj = Xpos[j];
                         double yj = Ypos[j];
               
                         if( j<i ) {
-                            Adj[i][j] = CS_entries(xi, xj, yi, yj, R, k, sigma, beta); 
-                            Adj[j][i] = CS_entries(xi, xj, yi, yj, R, k, sigma, beta); 
+
+                            double r_ij = (xj-xi)*(xj-xi) + (yj-yi)*(yj-yi);  //modulo quadro di ri-rj
+                            double mod_r = std::sqrt(r_ij);  //modulo di ri-rj
+
+                            if ( mod_r <= R ) {
+                                Adj[i][j] = ( k / ( std::pow( ((sigma*sigma) + r_ij) , beta ) ) );
+                                Adj[j][i] = Adj[i][j];
+                            } else if ( mod_r > R ) {
+                                Adj[i][j] = 0;
+                                Adj[j][i] = 0;
+                            } 
+                            
                         }
+
 
                     }
                 }
@@ -342,7 +341,16 @@ int main(){
 
                 }
             }
-            */
+
+            if ( n <= 20 ) { 
+                for (int i=0; i<n; i++){        //printing Adjacency matrix
+                    for (int j=0; j<n; j++){
+                        std::cout<< Adj[i][j] << '\t';
+                    }
+                    std::cout << '\n';
+                } 
+            }
+            
 
             for (int i=0; i<n; ++i) {
                 //std::cout << "evaluating interaction term for " <<i<< '\n';
@@ -351,13 +359,13 @@ int main(){
 
                     Int[i] += (1/N)* Adj[i][j] * ( tanh(x[j]-x[i])  )  ;   //saving interaction terms
 
-                            
+                    /*        
                     if (t>2 && t<3){
                         if (Adj[i][j] != 0) {         
-                            //std::cout <<"Adj["<<i<<"]["<<j<<"]"<< " was: " << Adj[i][j] <<'\n';
-                            //std::cout <<"the term added to Int["<<i<<"]"<< " was " << (1/N) * Adj[i][j] * ( tanh(x[j]-x[i])  ) <<'\n';
+                            std::cout <<"Adj["<<i<<"]["<<j<<"]"<< " was: " << Adj[i][j] <<'\n';
+                            std::cout <<"the term added to Int["<<i<<"]"<< " was " << (1/N) * Adj[i][j] * ( tanh(x[j]-x[i])  ) <<'\n';
                         }
-                    }  
+                    } */ 
                 } 
                 //if (t>2 && t<3) { std::cout << "interaction term for " <<i<< " at time " <<t<< " was " << Int[i] << '\n'; }   
             }
@@ -370,7 +378,7 @@ int main(){
             }    
         }
         
-        //if ( counter > 0 ) { std::cout<< "at time " <<t<< "there were " <<counter<< " negative interaction terms on a total of " <<n<< '\n'; }
+        if ( counter > 0 ) { std::cout<< "at time " <<t<< "there were " <<counter<< " negative interaction terms on a total of " <<n<< '\n'; }
         if ( counter >= n-1 ) { 
             std::cout << "******ERROR****** : every interaction term was negative; so every firefly stayed in her state and synchronization was impossible to achieve" <<'\n'; 
         }
@@ -378,24 +386,22 @@ int main(){
         
         t += dt;    //adjourn current time   
 
-        for (int i=0; i<n; ++i){       //without integration      
-            if ( Int[i] > -1e-8 ) {
+        for (int i=0; i<n; ++i){             
+            if ( Int[i] > -1e-8 ) {     //termini di interazione quando si sincronizza dell'ordine di -1e-5 -> -1e-7 trascurabile 
 
                 x[i] += 0.2;
 
             }
-            //if ( Int[i] < 0 ) { avg_int += (2*Int[i]/N); }
 
             Int[i] = 0;
         }
-        //std::cout << "average interaction term at t=" <<t<< " was " << avg_int <<'\n';
 
         for (int i=0; i<n; ++i ){
             if ( x[i] > 1.9999 ) { x[i] = 0; }
         }
 
-        //move(Xpos, L, 300.0);
-        //move(Ypos, L, 300.0);
+        move(Xpos, L, dx);
+        move(Ypos, L, dx);
 
     }
     check.close();

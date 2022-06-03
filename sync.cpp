@@ -75,10 +75,9 @@ double CS_entries(double xi, double xj, double yi, double yj, double R, double k
 
 }
 
-void move (std::vector<double>& pos, double L, double res){
+void move (std::vector<double>& pos, double L, double dx){
 
     int n = pos.size();
-    double dx = L/res;
 
     std::random_device rd;  
     std::mt19937 seed(rd()); 
@@ -98,7 +97,7 @@ void move (std::vector<double>& pos, double L, double res){
         } 
 
         if ( pos[i] > L ) { pos[i] -= L; }      //pareti periodiche
-        if ( pos[i] < -L ) { pos[i] += L; }
+        if ( pos[i] < 0 ) { pos[i] += L; }
         
     }
 
@@ -139,7 +138,15 @@ void move (std::vector<double>& pos, double L, double res){
 
 
 
+/*struct MCU{             //functor to be passed to do_step for the integration
+    void operator() (const state_type &x, state_type &dxdt, const double t) {
+        
+        for(int i=0; i<N; ++i){    
+            dxdt[i] = 1/T; 
+        }
 
+    }
+};*/
 
 
 
@@ -157,9 +164,6 @@ void move (std::vector<double>& pos, double L, double res){
                 }
 
 */
-
-
-
 
 
 
