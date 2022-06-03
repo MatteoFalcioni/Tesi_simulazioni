@@ -20,15 +20,9 @@ int dmod(double t_, double T_, double res) {
 
 int normalizer(double Theta) {
     int theta = trunc(Theta + 0.001);       //truncs theta in the proper range (2.7 --> 2)
-    if (theta % 2 == 0) { theta = 0; }  //odd range -> off, even range -> on
+    if (theta % 2 == 0) { theta = 0; }      //odd range -> off, even range -> on
     else if (theta % 2 != 0) { theta = 1; }
     return theta;
-}
-
-double Chi(double deltaX) {
-    if (deltaX > 0.001) { return +1; }
-    if (deltaX < -0.001) { return -1; }
-    else if ( deltaX > -0.001 && deltaX < 0.001 ) { return +1; }
 }
 
 std::vector<double> Phases_generator(int N){
@@ -149,7 +143,8 @@ void move (std::vector<double>& pos, double L, double dx){
 };*/
 
 
-
+    //create stepper:
+    //runge_kutta4<state_type> rk4; 
 
 /*
                 if (t>95 && t<97){
