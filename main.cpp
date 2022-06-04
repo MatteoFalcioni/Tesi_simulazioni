@@ -14,7 +14,7 @@ double sigma = 1;
 double beta = 8.0 ; 
 double R = 5.0;
 
-double n_c = 6.0; //Parisi parameter  (# of topological neighbours)
+double n_c = 7.0; //Parisi parameter  (# of topological neighbours)
 
 double t = 0.0;    //time related parameters
 size_t nSteps = 500;
@@ -26,7 +26,7 @@ double dx = 0.1;  //spatial step
 
 //**********************************************************************************************************************************************
 //**********************//
-int model_type = 1;     ////////  choose model: 0 = global interaction. 1 = Cucker-Smale, metric interaction. 2 = Parisi, topological.   ////////  
+int model_type = 2;     ////////  choose model: 0 = global interaction. 1 = Cucker-Smale, metric interaction. 2 = Parisi, topological.   ////////  
 //**********************//
 //**********************************************************************************************************************************************
 
@@ -217,13 +217,12 @@ int main(){
     fout.open("solutions.txt", std::ios::out); 
     std::fstream sync;
     sync.open("Synchronization.txt", std::ios::out); 
-    std::fstream check;
-    check.open("Initial_conditions.txt", std::ios::out);
+    std::fstream s0;
+    s0.open("Initial_conditions.txt", std::ios::out);
 
     int counter=0;
 
     for ( int ii=0; ii<nSteps; ++ii ){  
-        //double avg_int = 0;
 
         //printing m-l/N : m = # of fireflies in 0, l = # of fireflies in 1 
         double m = 0;
@@ -237,7 +236,7 @@ int main(){
             }
         }
         if (t==0) {
-            check << m << '\t' << l << '\t' << '\n'; 
+            s0 << m << '\t' << l << '\t' << '\n'; 
         }
         sync << t <<'\t'<< (m-l)/N << '\n';
 
@@ -255,22 +254,22 @@ int main(){
 
             for(int i=0;i<n;i++){
                 if ( Xpos[i] > 0 && Xpos[i] < R ) {
-                    double xplus = Xpos[i] + L;
-                    Xplus[i] = xplus;
+                    double xright = Xpos[i] + L;
+                    Xplus[i] = xright;
                 }
                 if ( Xpos[i] > L-R && Xpos[i] < L ) {
-                    double xminus = Xpos[i] - L;
-                    Xplus[i] = xminus;
+                    double xleft = Xpos[i] - L;
+                    Xplus[i] = xleft;
                 }
             }
             for(int i=0;i<n;i++){
                 if ( Ypos[i] > 0 && Ypos[i] < R ) {
-                    double yplus = Ypos[i] + L;
-                    Yplus[i] = yplus;
+                    double yup = Ypos[i] + L;
+                    Yplus[i] = yup;
                 }
                 if ( Ypos[i] > L-R && Ypos[i] < L ) {
-                    double yminus = Ypos[i] - L;
-                    Yplus[i] = yminus;
+                    double ydown = Ypos[i] - L;
+                    Yplus[i] = ydown;
                 }
             }            
             //ora se ho una lucciola che sta tra L-R ed L, ad esempio, devo andare a guardare in Xpos E in Xplus
@@ -304,34 +303,31 @@ int main(){
                     }
                     //in più, se stanno vicino alle pareti controllano anche le altre strisce
                     if ( (xi > L-R && xi < L) || (xi > 0 && xi < R) ) {
-                        std::cout << "xi was in " <<xi<< " so it should check on the other side " <<'\n';
+                        //std::cout << "xi, i= " <<i<< " ,was in " <<xi<< " so it should check on the other side " <<'\n';
                         for (int j=0; j<n; j++){      
-
+                            //std::cout << "Xplus[" <<j<< "] = " <<Xplus[j] << '\n'; 
                             if (Xplus[j] != num ) {                                
                                 double xj = Xplus[j];
                                 double yj = Ypos[j];    //y è la stessa
               
-                                if( j<i ) {
+                                if( j!=i ) {
 
                                     double r_ij = (xj-xi)*(xj-xi) + (yj-yi)*(yj-yi);  
                                     double mod_r = std::sqrt(r_ij); 
 
                                     if ( mod_r <= R ) {
-                                        std::cout << "xj was in " <<xj<< " and it was considered a neighbour of xi" <<'\n';
+                                        //std::cout << "xj was in " <<xj<<  " ;rij was " << mod_r << " while R was " <<R<< " and it was considered a neighbour of xi = " << xi <<'\n';
                                         Adj[i][j] = ( k / ( std::pow( ((sigma*sigma) + r_ij) , beta ) ) );
-                                        Adj[j][i] = Adj[i][j];
                                     } else if ( mod_r > R ) {
-                                        std::cout << "xj was in " <<xj<< " so it was not considered a neighbour of xi" <<'\n';
+                                        //std::cout << "xj was in " <<xj<<  " ;rij was " << mod_r << " while R was " <<R<< " ,so it was not considered a neighbour of xi = " << xi <<'\n';
                                         Adj[i][j] = 0;
-                                        Adj[j][i] = 0;
                                     } 
-                            
                                 }
                             }
                         }
 
                     }
-                    /*
+                    
                     if ( (yi > L-R && yi < L) || (yi > 0 && yi < R) ) {
                         for (int j=0; j<n; j++){      
 
@@ -339,24 +335,22 @@ int main(){
                                 double xj = Xpos[j];        //x è la stessa
                                 double yj = Yplus[j];    
               
-                                if( j<i ) {
+                                if( j!=i ) {
 
                                     double r_ij = (xj-xi)*(xj-xi) + (yj-yi)*(yj-yi);  
                                     double mod_r = std::sqrt(r_ij); 
 
                                     if ( mod_r <= R ) {
                                         Adj[i][j] = ( k / ( std::pow( ((sigma*sigma) + r_ij) , beta ) ) );
-                                        Adj[j][i] = Adj[i][j];
                                     } else if ( mod_r > R ) {
                                         Adj[i][j] = 0;
-                                        Adj[j][i] = 0;
                                     } 
                             
                                 }
                             }
                         }
 
-                    }*/                    
+                    }                   
 
 
                 }
@@ -368,38 +362,83 @@ int main(){
                     double xi = Xpos[i];
                     double yi = Ypos[i];
 
+                    std::vector<double> Ri(n);   //vector of relative distances from i
+
+                    for (int j=0; j<n; j++){
+                        double xj = Xpos[j];
+                        double yj = Ypos[j];
+
+                        double r_ij = (xj-xi)*(xj-xi) + (yj-yi)*(yj-yi); 
+                        double mod_r = std::sqrt(r_ij);  //modulo di ri-rj
+
+                        Ri[j] = mod_r;
+                        if ( j==i ) { Ri[j] = 0; }
+                    }                    
+                    
                     int i_neighbours = 0;  //conta i vicini di i
                     double dr = 0.001;
                     double r0 = dr*2;
-                    
+
                     for (double r=0; r<R; r += r0) {   //NB: dr != r0 needed
-                        if ( i_neighbours < n_c ){ 
-                    
+                        if ( i_neighbours < n_c ){                     
                             for (int j=0; j<n; j++) { 
                                 if ( j != i ) {
 
-                                    double xj = Xpos[j];
-                                    double yj = Ypos[j];
-
-                                    double r_ij = (xj-xi)*(xj-xi) + (yj-yi)*(yj-yi); 
-                                    double mod_r = std::sqrt(r_ij);  //modulo di ri-rj                                    
-
-                                    if ( r < mod_r + dr && r > mod_r - dr ) {
-
+                                    if ( r < Ri[j]+dr && r > Ri[j]-dr ) {
                                         i_neighbours += 1;
-                                        Adj[i][j] = 1/n_c;
-                    
-                                    }
-                            
+                                        Adj[i][j] = 1/n_c;                            
+                                    }                            
                                 }
                             }
-                        }
-                
+                        }                
                     }
+
+                    //qui dovrò fare un Rplus_i se xi o yi stanno vicino ai bordi
+                    //ATTENZIONE NON E' COSI' SEMPLICE: è un'interazione topologica. se prima gli faccio controllare i vicini in Xpos e poi quelli in Xplus quelli in xplus non li conta, raggiunge i_neighbour in Xpos...
+                    if ( (xi > L-R && xi < L) || (xi > 0 && xi < R) ) {
+                        
+                        std::vector<double> RXplus_i(n);   //vector of relative distances from i
+
+                        for (int j=0; j<n; j++){
+                            if (Xplus[j] != num ) {
+
+                                double xj = Xplus[j];
+                                double yj = Ypos[j];    //y è la stessa
+
+                                double r_ij = (xj-xi)*(xj-xi) + (yj-yi)*(yj-yi); 
+                                double mod_r = std::sqrt(r_ij);  //modulo di ri-rj
+
+                                RXplus_i[j] = mod_r;
+                                if ( j==i ) { RXplus_i[j] = 0; }
+
+                            }
+
+                        }
+
+                        int i_neighbours = 0;  //conta i vicini di i                   
+
+                        for (double r=0; r<R; r += r0) {   //NB: dr != r0 needed
+                            if ( i_neighbours < n_c ){                     
+                                for (int j=0; j<n; j++) { 
+                                    if ( j != i ) {
+
+                                        if ( r < Ri[j]+dr && r > Ri[j]-dr ) {
+                                            i_neighbours += 1;
+                                            Adj[i][j] = 1/n_c;                            
+                                        }                            
+                                    }
+                                }
+                            }
+                        }                
+                        
+
+                    }
+                                             
+                    
 
                 }
             }
-/*
+            /*
             if ( n <= 20 ) { 
                 for (int i=0; i<n; i++){        //printing Adjacency matrix
                     for (int j=0; j<n; j++){
@@ -408,10 +447,9 @@ int main(){
                     std::cout << '\n';
                 } 
             }
-*/          
+            */          
 
             for (int i=0; i<n; ++i) {
-                //std::cout << "evaluating interaction term for " <<i<< '\n';
 
                 for (int j=0; j<n; ++j){
 
@@ -431,7 +469,7 @@ int main(){
         } 
 
         for (int i=0; i<n; i++) {
-            if( Int[i] < 0 ) {  
+            if( Int[i] < -1e-8 ) {  
                 counter += 1;
             }    
         }
@@ -462,7 +500,7 @@ int main(){
         move(Ypos, L, dx);
 
     }
-    check.close();
+    s0.close();
     fout.close();  
     sync.close();
 
