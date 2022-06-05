@@ -98,6 +98,84 @@ void move (std::vector<double>& pos, double L, double dx){
 }
 
 
+//////come avevo fatto il controllo delle strisce per il metrico:
+/*
+
+
+            for(int i=0;i<n;i++){
+                if ( Xpos[i] > 0 && Xpos[i] < R ) {
+                    double xright = Xpos[i] + L;
+                    Xplus[i] = xright;
+                }
+                if ( Xpos[i] > L-R && Xpos[i] < L ) {
+                    double xleft = Xpos[i] - L;
+                    Xplus[i] = xleft;
+                }
+            }
+            for(int i=0;i<n;i++){
+                if ( Ypos[i] > 0 && Ypos[i] < R ) {
+                    double yup = Ypos[i] + L;
+                    Yplus[i] = yup;
+                }
+                if ( Ypos[i] > L-R && Ypos[i] < L ) {
+                    double ydown = Ypos[i] - L;
+                    Yplus[i] = ydown;
+                }
+            }
+
+
+
+                    if ( (xi > L-R && xi < L) || (xi > 0 && xi < R) ) {
+                        //std::cout << "xi, i= " <<i<< " ,was in " <<xi<< " so it should check on the other side " <<'\n';
+                        for (int j=0; j<n; j++){      
+                            //std::cout << "Xplus[" <<j<< "] = " <<Xplus[j] << '\n'; 
+                            if (Xplus[j] != num ) {                                
+                                double xj = Xplus[j];
+                                double yj = Ypos[j];    //y è la stessa
+              
+                                if( j!=i ) {
+
+                                    double r_ij = (xj-xi)*(xj-xi) + (yj-yi)*(yj-yi);  
+                                    double mod_r = std::sqrt(r_ij); 
+
+                                    if ( mod_r <= R ) {
+                                        //std::cout << "xj was in " <<xj<<  " ;rij was " << mod_r << " while R was " <<R<< " and it was considered a neighbour of xi = " << xi <<'\n';
+                                        Adj[i][j] = ( k / ( std::pow( ((sigma*sigma) + r_ij) , beta ) ) );
+                                    } else if ( mod_r > R ) {
+                                        //std::cout << "xj was in " <<xj<<  " ;rij was " << mod_r << " while R was " <<R<< " ,so it was not considered a neighbour of xi = " << xi <<'\n';
+                                        Adj[i][j] = 0;
+                                    } 
+                                }
+                            }
+                        }
+
+                    }
+                    
+                    if ( (yi > L-R && yi < L) || (yi > 0 && yi < R) ) {
+                        for (int j=0; j<n; j++){      
+
+                            if (Yplus[j] != num ) {
+                                double xj = Xpos[j];        //x è la stessa
+                                double yj = Yplus[j];    
+              
+                                if( j!=i ) {
+
+                                    double r_ij = (xj-xi)*(xj-xi) + (yj-yi)*(yj-yi);  
+                                    double mod_r = std::sqrt(r_ij); 
+
+                                    if ( mod_r <= R ) {
+                                        Adj[i][j] = ( k / ( std::pow( ((sigma*sigma) + r_ij) , beta ) ) );
+                                    } else if ( mod_r > R ) {
+                                        Adj[i][j] = 0;
+                                    } 
+                            
+                                }
+                            }
+                        }
+
+                    } */       
+
+
 
 
 
