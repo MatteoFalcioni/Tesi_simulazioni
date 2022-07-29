@@ -98,6 +98,126 @@ void move (std::vector<double>& pos, double L, double dx){
 }
 
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+////////////matrici di adiacenza indipendenti dal tempo (senza move)
+        /*
+            if (model_type == 1){   //Cucker-Smale
+
+            double avg_neighbours=0;
+            for (int i=0; i<n; i++){    //filling Adjacency matrix 
+
+                double xi = Xpos[i];
+                double yi = Ypos[i];
+
+                std::vector<double> Ri(n);
+
+                for (int j=0; j<n; j++){
+
+                    double xj = Xpos[j];
+                    double yj = Ypos[j];
+
+                    if( j<i ) {
+                        Adj[i][j] = CS_entries(xi, xj, yi, yj, R, k, sigma, beta); 
+                        Adj[j][i] = CS_entries(xi, xj, yi, yj, R, k, sigma, beta); 
+                    }
+
+
+                    //voglio controllare in media quante vicine vede ognuna una volta fissato R, perché almeno deve vederne n_c per comparare i due modelli, poi non voglio che ne veda una marea sennò troppo easy
+                    double r_ij = (xj-xi)*(xj-xi) + (yj-yi)*(yj-yi); 
+                    double mod_r = std::sqrt(r_ij);                 
+                    Ri[j] = mod_r;
+                    if ( j==i ) { Ri[j] = 0; }
+
+                }
+
+                double i_neighbours = 0; 
+                double dr = 0.001;
+                double r0 = dr*2;
+                double Rmax = R;    
+
+                for (double r=0; r<Rmax; r += r0) {    //da togliere nel for col movimento
+                    for (int j=0; j<n; j++) { 
+                        if ( j != i ) {
+                            if ( r < Ri[j]+dr && r > Ri[j]-dr ) {
+                                i_neighbours += 1;
+                            }
+                            
+                        }
+                    }                
+                }
+
+                avg_neighbours += (i_neighbours / N);
+            }
+            std::cout << " # of average neighbours in metric interaction was " << avg_neighbours << '\n';
+
+        } 
+        
+        else if (model_type == 2){  //Parisi
+            for (int i=0; i<n; i++){
+                double xi = Xpos[i];
+                double yi = Ypos[i];
+
+                std::vector<double> Ri(n);   //vector of relative distances from i
+
+                for (int j=0; j<n; j++){
+                    double xj = Xpos[j];
+                    double yj = Ypos[j];
+
+                    double r_ij = (xj-xi)*(xj-xi) + (yj-yi)*(yj-yi); 
+                    double mod_r = std::sqrt(r_ij);  //modulo di ri-rj
+
+                    Ri[j] = mod_r;
+                    if ( j==i ) { Ri[j] = 0; }
+                }
+                std::cout<< "relative distances from " <<i<< " which is in ( " << Xpos[i] << " , " << Ypos[i] << " ) are: " << '\n';
+                for (int j=0; j<n; j++){
+                    std::cout << Ri[j] << '\t';
+                }
+                std::cout <<'\n';
+
+                int i_neighbours = 0;  //conta i vicini di i
+                double dr = 0.001;
+                double r0 = dr*2;
+
+                for (double r=0; r<R; r += r0) {   //NB: dr != r0 needed
+                    if ( i_neighbours < n_c ){                     
+                        for (int j=0; j<n; j++) { 
+                            if ( j != i ) {
+
+                                if ( r < Ri[j]+dr && r > Ri[j]-dr ) {
+                                    //std::cout << "for " <<i<< " " <<j<< " was seen as a close neighbour as r = " << r <<'\n';
+                                    i_neighbours += 1;
+                                    Adj[i][j] = 1/n_c;
+                                    //if ( i_neighbours == n_c ) { std::cout<< "# of neighbours reached for " <<i<< '\n'; }
+                            
+                                }
+                            
+                            }
+                        }
+                    }                
+                }
+            }
+          
+        } */
+
+
+
+
 //////come avevo fatto il controllo delle strisce per il metrico:
 /*
 
@@ -174,37 +294,6 @@ void move (std::vector<double>& pos, double L, double dx){
                         }
 
                     } */       
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 
 
