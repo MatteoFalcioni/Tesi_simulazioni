@@ -7,14 +7,14 @@
 #include "sync.h"
 
 using namespace boost::numeric::odeint;
-double N = 500;  //Kuramoto parameters                           
+double N = 500;  //Kuramoto parameter                           
 
 double k = 1;   //Cucker-Smale parameters
 double sigma = 1; 
 double beta = 7.0 ; 
 double R = 5.0;
 
-double n_c = 1.0; //Parisi parameter  (# of topological neighbours)
+double n_c = 1.0001; //Parisi parameter  (# of topological neighbours)
 
 size_t nSteps = 500;
 double dt = 0.1;   //time step
@@ -27,7 +27,7 @@ double nSim = 500;  //# di simulazioni da eseguire
 
 //**********************************************************************************************************************************************
 //**********************//
-int model_type = 1;     ////////  choose model: 0 = global interaction. 1 = Cucker-Smale, metric interaction. 2 = Parisi, topological.   ////////  
+int model_type = 1;     ////////  choose model: (0) = global interaction. (1) = Cucker-Smale, metric interaction. (2) = Parisi, topological.   ////////  
 //**********************//
 //**********************************************************************************************************************************************
 
@@ -35,11 +35,11 @@ int model_type = 1;     ////////  choose model: 0 = global interaction. 1 = Cuck
 int main(){
 
     double nc_max = 8.0;
-    double beta_max = 16.0;
+    double beta_max = 13.0;
     std::cout << "starting loop" <<'\n';
 
-    while (n_c < nc_max) {
-        std::cout << "n_c = " << n_c <<'\n';
+    while (beta < beta_max) {
+        std::cout << "beta = " << beta <<'\n';
 
     std::vector<int> t_average;
 
@@ -366,13 +366,18 @@ int main(){
             N_sync += 1;
             probability += 1/nSim;
         } 
+        else {
+            data << nSteps << '\n';
+        }
         data.close();
 
     }
 
+    int nc = trunc(n_c);
+
     std::cout << nSim << " simulations performed" <<'\n';
     if (model_type == 1) { std::cout << " For beta = " << beta; }
-    if (model_type == 2) { std::cout << " For n_c = " << n_c; }
+    if (model_type == 2) { std::cout << " For n_c = " << nc; }
 
     std::cout << " the probability of the system sychronizing turned out to be P = " << probability <<'\n';
 
@@ -392,11 +397,11 @@ int main(){
         std::cout << "beta = " <<beta<< "; <dt> = ( " << _dt_ << " +/- " << sigma_t <<" ) " <<'\n';
     }
     else if (model_type == 2) {
-        std::cout << "n_c = " <<n_c<< "; <dt> = ( " << _dt_ << " +/- " << sigma_t <<" ) " <<'\n';
+        std::cout << "n_c = " <<nc<< "; <dt> = ( " << _dt_ << " +/- " << sigma_t <<" ) " <<'\n';
     }
     
 
-    n_c += 1.0001;
+    beta += 1.0;
 
     }
 
