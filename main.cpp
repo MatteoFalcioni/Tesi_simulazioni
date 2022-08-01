@@ -5,6 +5,8 @@
 #include <numeric>
 #include <algorithm> 
 #include "sync.h"
+#include <X11/Xlib.h>
+#include <SFML/Graphics.hpp>
 
 using namespace boost::numeric::odeint;
 double N = 500;  //Kuramoto parameter                           
@@ -23,7 +25,7 @@ double T = 5*dt;
 double L = 24.5;  //box dimension
 double dx = 0.1;  //spatial step
 
-double nSim = 500;  //# di simulazioni da eseguire
+double nSim = 1;  //# di simulazioni da eseguire
 
 //**********************************************************************************************************************************************
 //**********************//
@@ -36,10 +38,10 @@ int main(){
 
     double nc_max = 8.0;
     double beta_max = 13.0;
-    std::cout << "starting loop" <<'\n';
+    //std::cout << "starting loop" <<'\n';
 
-    while (beta < beta_max) {
-        std::cout << "beta = " << beta <<'\n';
+    //while (beta < beta_max) {
+    //std::cout << "beta = " << beta <<'\n';
 
     std::vector<int> t_average;
 
@@ -58,7 +60,7 @@ int main(){
         sync.open("Synchronization.txt", std::ios::out);
         positions.open("Positions.txt", std::ios::out); 
 
-        std::vector<double> x(N);   // Initial condition, vector of N elements (N ODEs)    
+        std::vector<double> x(N);   // fasi, sarebbe meglio theta come nome   
 
         std::vector<double> Int(N);  //interaction terms 
 
@@ -77,6 +79,35 @@ int main(){
             positions << Xpos[i] << '\t' << Ypos[i] << '\n';
         }
         positions.close();
+
+        sf::RenderWindow window(sf::VideoMode(5*L,5*L), "FIREFLIES", sf::Style::Default); //creating window
+        int drawSize = 2;
+
+        while (window.isOpen()){    //game loop
+
+            sf::Event evnt;
+            while( window.pollEvent(evnt) ){
+
+                if (evnt.type == evnt.Closed){
+                    window.close();
+                }
+            }
+
+            window.clear();     //clear with default color (black)
+
+            for(int i=0; i<n; i++){
+                sf::CircleShape circle(drawSize);
+                circle.setPosition(Xpos[i],Ypos[i]);
+                circle.setFillColor(sf::Color::Yellow);
+                window.draw(circle);
+            }
+
+            
+
+            
+            window.display();
+
+        }
 
 
         double Adj[n][n];   //Adjacency matrix
@@ -261,14 +292,14 @@ int main(){
 
 
                         for (double r=0; r<Rmax; r += r0) {    //da togliere nel for col movimento
-                        for (int j=0; j<n; j++) { 
-                            if ( j != i ) {
-                                if ( r < Ri[j]+dr && r > Ri[j]-dr ) {
-                                    i_n += 1;
-                                }
+                            for (int j=0; j<n; j++) { 
+                                if ( j != i ) {
+                                    if ( r < Ri[j]+dr && r > Ri[j]-dr ) {
+                                        i_n += 1;
+                                    }
                             
-                            }
-                        }                
+                                }
+                            }                
                         }
 
                         avg_neighbours += (i_n / N);   */                 
@@ -276,25 +307,13 @@ int main(){
                     }
                 
                 }
-                    //std::cout << " # of average neighbours was " << avg_neighbours << '\n';
+                //std::cout << " # of average neighbours was " << avg_neighbours << '\n';        
 
-                    /*
-                    if ( n <= 20 ) { 
-                    std::cout << "printing adjacency matrix at time t = " <<t<< '\n\n';
-                    for (int i=0; i<n; i++){        //printing Adjacency matrix
-                        for (int j=0; j<n; j++){
-                            std::cout<< Adj[i][j] << '\t';
-                        }
-                        std::cout << '\n';
-                    } 
-                    }
-                    */          
+                for (int i=0; i<n; ++i) {
 
-                    for (int i=0; i<n; ++i) {
+                    for (int j=0; j<n; ++j){
 
-                        for (int j=0; j<n; ++j){
-
-                            Int[i] += (1/N)* Adj[i][j] * ( tanh(x[j]-x[i])  )  ;   //saving interaction terms
+                        Int[i] += (1/N)* Adj[i][j] * ( tanh(x[j]-x[i])  )  ;   //saving interaction terms
 
                             /*        
                             if (t>2 && t<3){
@@ -303,35 +322,35 @@ int main(){
                             std::cout <<"the term added to Int["<<i<<"]"<< " was " << (1/N) * Adj[i][j] * ( tanh(x[j]-x[i])  ) <<'\n';
                             }
                             } */ 
-                        } 
+                    } 
                         //if (t>2 && t<3) { std::cout << "interaction term for " <<i<< " at time " <<t<< " was " << Int[i] << '\n'; }   
-                    }
+                }
             
-                } 
+            } 
 
-                for (int i=0; i<n; i++) {
-                    if( Int[i] < -1e-8 ) {  
-                        counter += 1;
-                    }    
-                }
+            for (int i=0; i<n; i++) {
+                if( Int[i] < -1e-8 ) {  
+                    counter += 1;
+                }    
+            }
         
-                //if ( counter > 0 ) { std::cout<< "at time " <<t<< "there were " <<counter<< " negative interaction terms on a total of " <<n<< '\n'; }
-                if ( counter >= n-1 ) { 
-                    std::cout << "******ERROR****** : every interaction term was negative; so every firefly stayed in her state and synchronization was impossible to achieve" <<'\n'; 
-                }
-                counter = 0;  
+            //if ( counter > 0 ) { std::cout<< "at time " <<t<< "there were " <<counter<< " negative interaction terms on a total of " <<n<< '\n'; }
+            if ( counter >= n-1 ) { 
+                std::cout << "******ERROR****** : every interaction term was negative; so every firefly stayed in her state and synchronization was impossible to achieve" <<'\n'; 
+            }
+            counter = 0;  
         
-                t += dt;    //adjourn current time   
+            t += dt;    //adjourn current time   
 
-                for (int i=0; i<n; ++i){             
-                    if ( Int[i] > -1e-8 ) {     //termini di interazione quando si sincronizzano dell'ordine di -1e-5 -> -1e-7 trascurabile 
+            for (int i=0; i<n; ++i){             
+                if ( Int[i] > -1e-8 ) {     //termini di interazione quando si sincronizzano dell'ordine di -1e-5 -> -1e-7 trascurabile 
 
-                        x[i] += 0.2;
+                    x[i] += 0.2;
 
-                    }
-
-                    Int[i] = 0;
                 }
+
+                Int[i] = 0;
+            }
 
             for (int i=0; i<n; ++i ){
                 if ( x[i] > 1.9999 ) { x[i] = 0; }
@@ -401,10 +420,10 @@ int main(){
     }
     
 
-    beta += 1.0;
+    //beta += 1.0;
 
-    }
+    //}
 
-    std::cout << "loop ended" <<'\n';
+    //std::cout << "loop ended" <<'\n';
 
 }
