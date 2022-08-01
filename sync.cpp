@@ -496,3 +496,21 @@ double Chi(double theta_i, double theta_j, double maxdiff) {  //to be synchroniz
 
         } */
 
+                        /*
+                        double i_n = 0;
+                        double Rmax = R;    
+
+
+                        for (double r=0; r<Rmax; r += r0) {    //da togliere nel for col movimento
+                            for (int j=0; j<n; j++) { 
+                                if ( j != i ) {
+                                    if ( r < Ri[j]+dr && r > Ri[j]-dr ) {
+                                        i_n += 1;
+                                    }
+                            
+                                }
+                            }                
+                        }
+
+                        avg_neighbours += (i_n / N);   */
+                        //std::cout << " # of average neighbours was " << avg_neighbours << '\n';  
